@@ -88,7 +88,7 @@
       <DataSource>
         <TyfonDB>
           <Name>TyfonDB</Name>
-          <db_url>jdbc:mysql://localhost:3306/TyfonDB</db_url>
+          <db_url>jdbc:mysql://localhost:3306/PixipDB</db_url>
           <driver>com.mysql.jdbc.Driver</driver>
           <username>openrate</username>
           <password>openrate</password>
@@ -102,13 +102,6 @@
       <ClassName>OpenRate.resource.CacheFactory</ClassName>
       <ModuleName>CacheFactory</ModuleName>
       <CacheableClass>
-        <CallScenarioCache>
-          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
-          <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <SelectStatement>select MAP_GROUP,TRAFFIC_CASE,RESULT from CALL_SCENARIO_MAP</SelectStatement>
-        </CallScenarioCache>
-
         <PriceHierarchyCache>
           <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
           <DataSourceType>DB</DataSourceType>
@@ -146,16 +139,6 @@
           <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,RESOURCE_ID,CONSUME_FLAG from RUM_MAP order by STEP</RUMMapStatement>
         </RateCache>
 
-        <CustomerCache>
-          <ClassName>OpenRate.cache.CustomerCacheAudited</ClassName>
-          <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <AliasSelectStatement>select ALIAS_ID,NUMBER,CUSTOMER_ID,SUBSCRIPTION_ID,SEGMENT_VALID_FROM,SEGMENT_VALID_TO,ModT from VOIP_SERV_ALIAS where ModT &gt; ? order by SEGMENT_VALID_FROM</AliasSelectStatement>
-          <AuditSegmentSelectStatement>select AUDIT_SEGMENT_ID,CUSTOMER_ID,CUSTOMER_EXT_ID,AUDIT_SEGMENT_VALID_FROM,SEGMENT_VALID_FROM,SEGMENT_VALID_TO,ModT from VOIP_SERV_AUDIT where ModT &gt; ?</AuditSegmentSelectStatement>
-          <ProductSelectStatement>select AUDIT_SEGMENT_ID, PRODUCT_ID, PRODUCT_NAME, SUBSCRIPTION_ID, SERVICE, VALID_FROM, VALID_TO, ModT from VOIP_SERV_PRODUCT where ModT &gt; ?</ProductSelectStatement>
-          <ERASelectStatement>select * from VOIP_SERVICES where number='999999' and ModT = ?</ERASelectStatement>
-        </CustomerCache>
-        
         <!-- used to steer errors to the correct sort of output -->
         <SuspensePreparationCache>
           <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
