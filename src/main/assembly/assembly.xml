@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly
+  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+  <id>bin</id>
+
+  <formats>
+    <format>zip</format>
+  </formats>
+
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>lib</outputDirectory>
+      <excludes>
+        <exclude>OpenRate:OpenRate</exclude>
+      </excludes>
+      <unpack>false</unpack>
+    </dependencySet>
+    
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>ORlib</outputDirectory>
+      <includes>
+        <include>OpenRate:OpenRate</include>
+      </includes>
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <!-- Put the application jar in the "dist" folder -->
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>dist</outputDirectory>
+      <includes>
+        <include>*.jar</include>
+      </includes>
+        <excludes>
+          <exclude>src/main/resources/*.*</exclude>
+        </excludes>
+    </fileSet>
+
+    <!-- Copy over all the scripts we have -->
+    <fileSet>
+      <directory>src/main/bin</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>**/*.template</include>
+      </includes>
+    </fileSet>
+
+    <!-- Copy over all the config files we have -->
+    <fileSet>
+      <directory>src/main/resources</directory>
+      <outputDirectory>properties</outputDirectory>
+      <includes>
+        <include>Pixip.properties.xml</include>
+        <include>logPixip.properties</include>
+        <include>log4j.dtd</include>
+      </includes>
+    </fileSet>
+
+    <!-- Force the directories with descriptions -->
+    <fileSet>
+      <directory>src/main/resources</directory>
+      <outputDirectory>Semaphore</outputDirectory>
+      <includes>
+        <include>Semaphore-Readme.txt</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>src/main/resources</directory>
+      <outputDirectory>log</outputDirectory>
+      <includes>
+        <include>Log-Readme.txt</include>
+      </includes>
+    </fileSet>
+    
+    <fileSet>
+      <directory>src/main/resources</directory>
+      <outputDirectory>Data/Pixip</outputDirectory>
+      <includes>
+        <include>Data-Readme.txt</include>
+      </includes>
+    </fileSet>
+    
+    <!-- Copy over the Configuration files -->
+    <fileSet>
+      <directory>src/main/resources/ConfigData/Pixip</directory>
+      <outputDirectory>ConfigData/Pixip</outputDirectory>
+      <includes>
+        <include>SP.sql</include>
+        <include>TimeModel.dat</include>
+      </includes>
+    </fileSet>
+
+  </fileSets>
+</assembly>

@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<config>
+  <Application>
+    Pixip
+  </Application>
+
+  <PipelineList>
+    <PixipPipe>
+      <Active>True</Active>
+    </PixipPipe>
+  </PipelineList>
+
+  <PixipPipe>
+    <!-- Input Adapter -->
+    <InputAdapter>
+      <PInpAdapter>
+        <ClassName>Pixip.PixipInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+        <InputFilePath>Data/Pixip</InputFilePath>
+        <InputFilePrefix>IP_VCP_</InputFilePrefix>
+        <InputFileSuffix>.txt</InputFileSuffix>
+        <DoneFilePath>Data/Pixip</DoneFilePath>
+        <DoneFilePrefix>IP_VCP_</DoneFilePrefix>
+        <DoneFileSuffix>.done</DoneFileSuffix>
+        <ErrFilePath>Data/Pixip</ErrFilePath>
+        <ErrFilePrefix>IP_VCP_</ErrFilePrefix>
+        <ErrFileSuffix>.err</ErrFileSuffix>
+      </PInpAdapter>
+    </InputAdapter>
+
+    <!-- Processing Pipeline -->
+    <Process>
+      <!-- Dump Diagnostic Information -->
+      <DumpFirst>
+        <ClassName>OpenRate.process.Dump</ClassName>
+        <Active>True</Active>
+        <DumpType>All</DumpType>
+        <DumpFilePath>Data/Pixip</DumpFilePath>
+        <DumpFilePrefix>IP_VCP_</DumpFilePrefix>
+        <DumpFileSuffix>.dump</DumpFileSuffix>
+        <BatchSize>5000</BatchSize>
+      </DumpFirst>
+    </Process>
+
+    <!-- Output Adapters -->
+    <OutputAdapter>
+      <CGoodOutAdapter>
+        <ClassName>Pixip.XMLOutputAdapter</ClassName>
+        <OutputName>GoodOutput</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <OutputFilePath>Data/Pixip</OutputFilePath>
+        <OutputFilePrefix>callfile-</OutputFilePrefix>
+        <OutputFileSuffix>.xml</OutputFileSuffix>
+        <SingleOutputFile>True</SingleOutputFile>
+      </CGoodOutAdapter>
+    </OutputAdapter>
+  </PixipPipe>
+
+  <Resource>
+    <LogFactory>
+      <ClassName>OpenRate.logging.LogFactory</ClassName>
+      <Properties>logPixip.properties</Properties>
+      <DefaultCategory>ConfigTest</DefaultCategory>
+    </LogFactory>
+
+    <ECI>
+      <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+      <Port>8086</Port>
+      <MaxConnection>2</MaxConnection>
+      <SemaphoreFile>Semaphore/Semaphore.txt</SemaphoreFile>
+    </ECI>
+
+    <TransactionManagerFactory>
+      <ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+    </TransactionManagerFactory>
+
+    <!-- Conversion Cache allows us to cache heavy coversion objects -->
+    <ConversionCache>
+      <ClassName>OpenRate.resource.ConversionCache</ClassName>
+    </ConversionCache>
+
+    <DataSourceFactory>
+      <ClassName>OpenRate.resource.DataSourceFactory</ClassName>
+      <DataSourceBuilder>
+        <ClassName>OpenRate.db.C3P0DataSource</ClassName>
+      </DataSourceBuilder>
+      <DataSource>
+        <TyfonDB>
+          <Name>TyfonDB</Name>
+          <db_url>jdbc:mysql://localhost:3306/TyfonDB</db_url>
+          <driver>com.mysql.jdbc.Driver</driver>
+          <username>openrate</username>
+          <password>openrate</password>
+          <ValidationQuery>select 1 from dual</ValidationQuery>
+          <InitQuery>select 1 from dual</InitQuery>
+        </TyfonDB>
+      </DataSource>
+    </DataSourceFactory>
+
+    <CacheFactory>
+      <ClassName>OpenRate.resource.CacheFactory</ClassName>
+      <ModuleName>CacheFactory</ModuleName>
+      <CacheableClass>
+        <CallScenarioCache>
+          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <SelectStatement>select MAP_GROUP,TRAFFIC_CASE,RESULT from CALL_SCENARIO_MAP</SelectStatement>
+        </CallScenarioCache>
+
+        <PriceHierarchyCache>
+          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <SelectStatement>select 'Default',PRICE_PLAN,PLAN_HIERARCHY,PRIORITY from PRICE_PLAN_HIERARCHY</SelectStatement>
+          <KeyFields>1</KeyFields>
+        </PriceHierarchyCache>
+
+        <ZoneCache>
+          <ClassName>OpenRate.cache.BestMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <SelectStatement>select MAP_GROUP,PREFIX,ZONE_RESULT,DESCRIPTION,CATEGORY,TYPE from DESTINATION_MAP</SelectStatement>
+        </ZoneCache>
+
+        <TimeCache>
+          <ClassName>OpenRate.cache.TimeModelCache</ClassName>
+          <DataSourceType>File</DataSourceType>
+          <DataFile>ConfigData/Pixip/TimeModel.dat</DataFile>
+        </TimeCache>
+
+        <PriceLookupCache>
+          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <SelectStatement>select MAP_GROUP,ZONE_RESULT,TIME_RESULT,PRICE_GROUP from PRICE_MAP</SelectStatement>
+        </PriceLookupCache>
+
+        <!-- holds the rating information -->
+        <RateCache>
+          <ClassName>OpenRate.cache.RUMRateCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE from PRICE_MODEL</PriceModelStatement>
+          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,RESOURCE_ID,CONSUME_FLAG from RUM_MAP order by STEP</RUMMapStatement>
+        </RateCache>
+
+        <CustomerCache>
+          <ClassName>OpenRate.cache.CustomerCacheAudited</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <AliasSelectStatement>select ALIAS_ID,NUMBER,CUSTOMER_ID,SUBSCRIPTION_ID,SEGMENT_VALID_FROM,SEGMENT_VALID_TO,ModT from VOIP_SERV_ALIAS where ModT &gt; ? order by SEGMENT_VALID_FROM</AliasSelectStatement>
+          <AuditSegmentSelectStatement>select AUDIT_SEGMENT_ID,CUSTOMER_ID,CUSTOMER_EXT_ID,AUDIT_SEGMENT_VALID_FROM,SEGMENT_VALID_FROM,SEGMENT_VALID_TO,ModT from VOIP_SERV_AUDIT where ModT &gt; ?</AuditSegmentSelectStatement>
+          <ProductSelectStatement>select AUDIT_SEGMENT_ID, PRODUCT_ID, PRODUCT_NAME, SUBSCRIPTION_ID, SERVICE, VALID_FROM, VALID_TO, ModT from VOIP_SERV_PRODUCT where ModT &gt; ?</ProductSelectStatement>
+          <ERASelectStatement>select * from VOIP_SERVICES where number='999999' and ModT = ?</ERASelectStatement>
+        </CustomerCache>
+        
+        <!-- used to steer errors to the correct sort of output -->
+        <SuspensePreparationCache>
+          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TyfonDB</DataSource>
+          <SelectStatement>select MAP_GROUP, ERROR_CODE, OUTPUT_NAME from SUSPENSE_MAP order by RANK</SelectStatement>
+          <KeyFields>1</KeyFields>
+        </SuspensePreparationCache>
+
+        <!-- Persistent store for remembering daily balances -->
+        <DailyBalanceCache>
+          <ClassName>OpenRate.cache.PersistentIndexedObject</ClassName>
+          <DataSourceType>File</DataSourceType>
+          <DataFile>Data/daily_balance.dat</DataFile>
+        </DailyBalanceCache>
+
+      </CacheableClass>
+    </CacheFactory>
+
+  </Resource>
+</config>
