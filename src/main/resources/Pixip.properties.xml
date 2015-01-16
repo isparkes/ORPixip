@@ -14,17 +14,29 @@
     <!-- Input Adapter -->
     <InputAdapter>
       <PInpAdapter>
-        <ClassName>Pixip.PixipInputAdapter</ClassName>
+        <ClassName>Pixip.PixipDBInputAdapter</ClassName>
         <BatchSize>5000</BatchSize>
-        <InputFilePath>Data/Pixip</InputFilePath>
-        <InputFilePrefix>IP_VCP_</InputFilePrefix>
-        <InputFileSuffix>.txt</InputFileSuffix>
-        <DoneFilePath>Data/Pixip</DoneFilePath>
-        <DoneFilePrefix>IP_VCP_</DoneFilePrefix>
-        <DoneFileSuffix>.done</DoneFileSuffix>
-        <ErrFilePath>Data/Pixip</ErrFilePath>
-        <ErrFilePrefix>IP_VCP_</ErrFilePrefix>
-        <ErrFileSuffix>.err</ErrFileSuffix>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select count(*) from mtn_billing_cdr</ValidateStatement>
+        <RecordCountStatement>select count(*) from mtn_billing_cdr where FIELD3 is null</RecordCountStatement>
+        <InitStatement>update mtn_billing_cdr set FIELD3 = '1' where FIELD3 is null</InitStatement>
+        <RecordSelectStatement>select mtn_cdr_id,
+                                      ANUMBER,
+                                      BNUMBER,
+                                      CALL_DATE,
+                                      CALL_DURATION,
+                                      CHARGE_MAIN_ACCT,
+                                      CALL_TYPE,
+                                      PARTNER_OPTR,
+                                      FNF_IND,
+                                      SERVICE_CLASS,
+                                      TELESERVICE_CODE,
+                                      TRAFFIC_TYPE
+                              from    mtn_billing_cdr r 
+                              where   FIELD3 = '1'
+        </RecordSelectStatement>
+        <CommitStatement></CommitStatement>
+        <RollbackStatement></RollbackStatement>
       </PInpAdapter>
     </InputAdapter>
 
@@ -45,14 +57,16 @@
     <!-- Output Adapters -->
     <OutputAdapter>
       <CGoodOutAdapter>
-        <ClassName>Pixip.XMLOutputAdapter</ClassName>
+        <ClassName>Pixip.PixipDBOutputAdapter</ClassName>
         <OutputName>GoodOutput</OutputName>
         <BatchSize>5000</BatchSize>
         <MaxSleep>50</MaxSleep>
-        <OutputFilePath>Data/Pixip</OutputFilePath>
-        <OutputFilePrefix>callfile-</OutputFilePrefix>
-        <OutputFileSuffix>.xml</OutputFileSuffix>
-        <SingleOutputFile>True</SingleOutputFile>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select 1 from mtn_billing_cdr</ValidateStatement>
+        <InitStatement>select 1 from mtn_billing_cdr</InitStatement>
+        <RecordInsertStatement>update mtn_billing_cdr set FIELD3 = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement>
+        <CommitStatement>update mtn_billing_cdr set FIELD3 = '3' where FIELD3 = '2'</CommitStatement>
+        <RollbackStatement>update mtn_billing_cdr set FIELD3 = '-1' where FIELD3 = '2'</RollbackStatement>
       </CGoodOutAdapter>
     </OutputAdapter>
   </PixipPipe>
@@ -85,16 +99,27 @@
       <DataSourceBuilder>
         <ClassName>OpenRate.db.C3P0DataSource</ClassName>
       </DataSourceBuilder>
+      
       <DataSource>
-        <TyfonDB>
-          <Name>TyfonDB</Name>
-          <db_url>jdbc:mysql://localhost:3306/PixipDB</db_url>
+        <mtn_poc_db>
+          <db_url>jdbc:mysql://localhost/mtn_poc</db_url>
           <driver>com.mysql.jdbc.Driver</driver>
-          <username>openrate</username>
-          <password>openrate</password>
+          <username>root</username>
+          <password>cpr</password>
           <ValidationQuery>select 1 from dual</ValidationQuery>
           <InitQuery>select 1 from dual</InitQuery>
-        </TyfonDB>
+          <TestConnectionPeriod>60</TestConnectionPeriod>
+        </mtn_poc_db>
+      
+        <PixipDB>
+          <db_url>jdbc:mysql://localhost/PixipDB</db_url>
+          <driver>com.mysql.jdbc.Driver</driver>
+          <username>root</username>
+          <password>cpr</password>
+          <ValidationQuery>select 1 from dual</ValidationQuery>
+          <InitQuery>select 1 from dual</InitQuery>
+          <TestConnectionPeriod>60</TestConnectionPeriod>
+        </PixipDB>
       </DataSource>
     </DataSourceFactory>
 
@@ -102,58 +127,14 @@
       <ClassName>OpenRate.resource.CacheFactory</ClassName>
       <ModuleName>CacheFactory</ModuleName>
       <CacheableClass>
-        <PriceHierarchyCache>
+        <!-- Number normalisation rules -->
+        <NormCache>
           <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
           <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <SelectStatement>select 'Default',PRICE_PLAN,PLAN_HIERARCHY,PRIORITY from PRICE_PLAN_HIERARCHY</SelectStatement>
-          <KeyFields>1</KeyFields>
-        </PriceHierarchyCache>
-
-        <ZoneCache>
-          <ClassName>OpenRate.cache.BestMatchCache</ClassName>
-          <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <SelectStatement>select MAP_GROUP,PREFIX,ZONE_RESULT,DESCRIPTION,CATEGORY,TYPE from DESTINATION_MAP</SelectStatement>
-        </ZoneCache>
-
-        <TimeCache>
-          <ClassName>OpenRate.cache.TimeModelCache</ClassName>
-          <DataSourceType>File</DataSourceType>
-          <DataFile>ConfigData/Pixip/TimeModel.dat</DataFile>
-        </TimeCache>
-
-        <PriceLookupCache>
-          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
-          <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <SelectStatement>select MAP_GROUP,ZONE_RESULT,TIME_RESULT,PRICE_GROUP from PRICE_MAP</SelectStatement>
-        </PriceLookupCache>
-
-        <!-- holds the rating information -->
-        <RateCache>
-          <ClassName>OpenRate.cache.RUMRateCache</ClassName>
-          <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE from PRICE_MODEL</PriceModelStatement>
-          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,RESOURCE_ID,CONSUME_FLAG from RUM_MAP order by STEP</RUMMapStatement>
-        </RateCache>
-
-        <!-- used to steer errors to the correct sort of output -->
-        <SuspensePreparationCache>
-          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
-          <DataSourceType>DB</DataSourceType>
-          <DataSource>TyfonDB</DataSource>
-          <SelectStatement>select MAP_GROUP, ERROR_CODE, OUTPUT_NAME from SUSPENSE_MAP order by RANK</SelectStatement>
-          <KeyFields>1</KeyFields>
-        </SuspensePreparationCache>
-
-        <!-- Persistent store for remembering daily balances -->
-        <DailyBalanceCache>
-          <ClassName>OpenRate.cache.PersistentIndexedObject</ClassName>
-          <DataSourceType>File</DataSourceType>
-          <DataFile>Data/daily_balance.dat</DataFile>
-        </DailyBalanceCache>
+          <DataSource>PixipDB</DataSource>
+          <SelectStatement>select MAP_GROUP,BAND,NUMBER,OLD_PREFIX,NEW_PREFIX from NORM_MAP order by RANK</SelectStatement>
+          <KeyFields>2</KeyFields>
+        </NormCache>
 
       </CacheableClass>
     </CacheFactory>

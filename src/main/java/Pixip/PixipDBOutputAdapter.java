@@ -96,6 +96,9 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     tmpDataRecord = new DBRecord();
     tmpDataRecord.setOutputColumnCount(3);
 
+    // Price
+    tmpDataRecord.setOutputColumnDouble(0, tmpInRecord.ratedAmount);
+
     // Rate information, add all Charge Packets Info in one string seperated by #
     StringBuilder rateInfo = new StringBuilder("");
     ChargePacket cp;
@@ -103,13 +106,10 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
       cp = tmpInRecord.getChargePacket(i);
       rateInfo.append(cp.ratePlanName).append(",").append(cp.service).append(",").append(cp.timeResult).append(",").append(cp.priceGroup).append("#");
     }
-    tmpDataRecord.setOutputColumnString(0, rateInfo.toString());
-
-    // Price
-    tmpDataRecord.setOutputColumnDouble(1, tmpInRecord.ratedAmount);
+    tmpDataRecord.setOutputColumnString(1, rateInfo.toString());
 
     // RadacctID (Primary key)
-    tmpDataRecord.setOutputColumnString(2, tmpInRecord.recordID);
+    tmpDataRecord.setOutputColumnString(2, tmpInRecord.recordId);
     Outbatch.add((IRecord) tmpDataRecord);
 
     return Outbatch;
@@ -119,6 +119,8 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
    * Handle any error records here so that they are ready to output making any
    * specific changes to the record that are necessary to make it ready for
    * output.
+   *
+   * @return
    */
   @Override
   public Collection<IRecord> procErrorRecord(IRecord r) {
@@ -130,14 +132,14 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     tmpDataRecord = new DBRecord();
     tmpDataRecord.setOutputColumnCount(3);
 
-    // Rate
-    tmpDataRecord.setOutputColumnString(0, tmpInRecord.getErrors().get(0).getMessage());
-
     // Price
-    tmpDataRecord.setOutputColumnDouble(1, new Double("0"));
+    tmpDataRecord.setOutputColumnDouble(0, new Double("0"));
 
-    // RadacctID (Primary key)
-    tmpDataRecord.setOutputColumnString(2, tmpInRecord.recordID);
+    // Error Description
+    tmpDataRecord.setOutputColumnString(1, tmpInRecord.getErrors().get(0).getMessage());
+
+    // Record ID (Primary key)
+    tmpDataRecord.setOutputColumnString(2, tmpInRecord.recordId);
     Outbatch.add((IRecord) tmpDataRecord);
 
     return Outbatch;

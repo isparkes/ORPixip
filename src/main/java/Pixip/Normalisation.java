@@ -144,44 +144,7 @@ public class Normalisation
         tmpError.setErrorDescription(CurrentRecord.B_Number);
         CurrentRecord.addError(tmpError);
         return r;
-      }
-      
-      // ********************* A Number Normalisation *********************
-
-//      // Convert the number to the US format
-//      if (CurrentRecord.anumber.isEmpty())
-//      {
-//          tmpError = new RecordError("ERR_A_NORMALISATION_EMPTY", ErrorType.SPECIAL);
-//          tmpError.setModuleName(getSymbolicName());
-//          tmpError.setErrorDescription(CurrentRecord.anumber);
-//          CurrentRecord.addError(tmpError);
-//          return r;
-//      }
-//      
-//      if ((CurrentRecord.anumber.trim().length() == 11) && (CurrentRecord.anumber.startsWith("1")))
-//      {
-//        CurrentRecord.anumber = CurrentRecord.anumber.substring(1,11);
-//      }
-//      else if ((CurrentRecord.anumber.trim().length() == 12) && (CurrentRecord.anumber.startsWith("+1")))
-//      {
-//        CurrentRecord.anumber = CurrentRecord.anumber.substring(2,12);
-//      }
-//      else if (CurrentRecord.anumber.trim().length() == 10)
-//      {
-//        // Already OK
-//      }
-//      else
-//      {
-//          tmpError = new RecordError("ERR_A_NORMALISATION_LENGTH", ErrorType.SPECIAL);
-//          tmpError.setModuleName(getSymbolicName());
-//          tmpError.setErrorDescription(CurrentRecord.anumber);
-//          CurrentRecord.addError(tmpError);
-//          return r;
-//      }
-//      
-//      //CurrentRecord.guidingKey = CurrentRecord.anumber.trim().substring(0,3) + "-" +
-//      //                           CurrentRecord.anumber.trim().substring(3,6) + "-" +
-//      //                           CurrentRecord.anumber.trim().substring(6,10);
+      }      
     }
 
     return r;
