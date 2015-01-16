@@ -63,14 +63,14 @@ import OpenRate.record.IRecord;
  *
  * @author TGDSPIA1
  */
-public class PixipInputAdapter extends FlatFileInputAdapter {
+public class PixipFileInputAdapter extends FlatFileInputAdapter {
 
   private int IntRecordNumber;
 
   /**
    * Constructor for CustomizeInputAdapter.
    */
-  public PixipInputAdapter() {
+  public PixipFileInputAdapter() {
     super();
   }
 
@@ -121,7 +121,7 @@ public class PixipInputAdapter extends FlatFileInputAdapter {
     tmpDataRecord = new PixipRecord();
 
     // Normal detail record
-    tmpDataRecord.mapVenteloDetailRecord(tmpFlatRecord.getData());
+    tmpDataRecord.mapFileDetailRecord(tmpFlatRecord.getData());
     IntRecordNumber++;
     tmpDataRecord.RecordNumber = IntRecordNumber;
 

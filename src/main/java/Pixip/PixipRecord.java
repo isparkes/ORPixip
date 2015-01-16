@@ -64,32 +64,32 @@ import java.util.ArrayList;
 /**
  * A Record corresponds to a unit of work that is being processed by the
  * pipeline. Records are created in the InputAdapter, pass through the Pipeline,
- * and written out in the OutputAdapter. Any stage of the pipeline my update the
- * record in any way, provided that later stages in the processing and the
- * output adapter know how to treat the record they receive.
- *
- * As an alternative, you may define a less flexible record format as you wish
- *
- * and fill in the fields as required, but this costs performance.
- *
- * Generally, the record should know how to handle the following operations by
- * linking the appropriate method:
- *
- * mapOriginalData() [mandatory] ----------------- Transformation from a flat
- * record as read by the input adapter to a formatted record.
- *
- * unmapOriginalData() [mandatory if you wish to write output files]
- * ------------------- Transformation from a formatted record to a flat record
- * ready for output.
- *
- * getDumpInfo() [optional] ------------- Preparation of the dump equivalent of
- * the formatted record, ready for dumping out to a dump file.
- *
- * In this simple example, we require only to read the "B-Number", and write the
- * "Destination" as a result of this. Because of the simplicity of the example
- * we do not perform a full mapping, we just handle the fields we want directly,
- * which is one of the advantages of the BBPA model (map as much as you want or
- * as little as you have to).
+ and written out in the OutputAdapter. Any stage of the pipeline my update the
+ record in any way, provided that later stages in the processing and the
+ output adapter know how to treat the record they receive.
+
+ As an alternative, you may define a less flexible record format as you wish
+
+ and fill in the fields as required, but this costs performance.
+
+ Generally, the record should know how to handle the following operations by
+ linking the appropriate method:
+
+ mapOriginalData() [mandatory] ----------------- Transformation from a flat
+ record as read by the input adapter to a formatted record.
+
+ unmapOriginalData() [mandatory if you wish to write output files]
+ ------------------- Transformation from a formatted record to a flat record
+ ready for output.
+
+ getDumpInfo() [optional] ------------- Preparation of the dump equivalent of
+ the formatted record, ready for dumping out to a dump file.
+
+ In this simple example, we require only to read the "B-Number", and write the
+ "destination" as a result of this. Because of the simplicity of the example
+ we do not perform a full mapping, we just handle the fields we want directly,
+ which is one of the advantages of the BBPA model (map as much as you want or
+ as little as you have to).
  *
  */
 public class PixipRecord extends RatingRecord {
@@ -202,30 +202,30 @@ public class PixipRecord extends RatingRecord {
   private static final long serialVersionUID = 1L;
 
   // CDR related variables
-  public String Call_Date = null; // Date of the call
-  public int Call_Time;        // Duration of the call
+  public String eventDate = null; // Date of the call
+  public int    callDuration;     // Duration of the call
   public String A_Number;         // Raw A Number
   public String B_Number;         // Raw B Number
   public String B_NumberNorm;     // Normalised B number
   public String supplier = null;  // The supplier of the call record
 
   // Rating variables
-  public String Destination;      // The zoning destination for the B Number
-  public String Zone_Cat;         // The category for the B Number
+  public String destination;      // The zoning destination for the B Number
+  public String destCategory;     // The category for the B Number
   public String Dest_Phone_Type;  // The type of number
   public String TimeZone;         // The time zone
-  //public String RetailPriceGroup; // The retail price group
   public Boolean isPremium = false;
 
   // Output rated amount values
   public double origAmount = 0;
   public double outputTotalCost = 0;
   public double outputConnCost = 0;
+  public double ratedAmount = 0;
 
   // Internal Management Fields
-  public Integer CustIDA = null;    // The identifier of the A customer
+  public Integer custIDA = null;    // The identifier of the A customer
   public String subscriptionID;    // Subscription ID used for posting in billing
-  public String UsedProduct;       // The identifier of the product
+  public String usedProduct;       // The identifier of the product
   public String baseProduct;       // The base price plan
   public ArrayList<String> overlay; // Overlay price plan(s)
   public String markupType;        // The type of markup, "" for none
@@ -234,6 +234,9 @@ public class PixipRecord extends RatingRecord {
 
   // The number of recycles for this record
   public int recycleCount = 0;
+  
+  // Unique ID for this record
+  public String recordID;
 
   /**
    * Utility function to map a file header record
@@ -262,7 +265,7 @@ public class PixipRecord extends RatingRecord {
    *
    * @param inputData The input data to map
    */
-  public void mapVenteloDetailRecord(String inputData) {
+  public void mapFileDetailRecord(String inputData) {
     // Set the record type
     RECORD_TYPE = PixipRecord.FILE_DETAIL_RECORD;
 
@@ -296,12 +299,12 @@ public class PixipRecord extends RatingRecord {
 
     // Validate the number of fields
     if (fields.length == FIELD_V_COUNT) {
-      Call_Date = getField(IDX_CALL_DATE);
+      eventDate = getField(IDX_CALL_DATE);
       A_Number = getField(IDX_ANUMBER);
       B_Number = getField(IDX_BNUMBER);
 
       try {
-        Call_Time = Integer.parseInt(getField(IDX_CALL_DURATION));
+        callDuration = Integer.parseInt(getField(IDX_CALL_DURATION));
       } catch (NumberFormatException nfe) {
         addError(new RecordError("ERR_DURATION_INVALID", ErrorType.DATA_VALIDATION));
       }
@@ -330,14 +333,14 @@ public class PixipRecord extends RatingRecord {
       // Get the CDR date
       try {
         SimpleDateFormat sdfInput = new SimpleDateFormat("yyyyMMddHHmmss");
-        EventStartDate = sdfInput.parse(Call_Date);
+        EventStartDate = sdfInput.parse(eventDate);
         UTCEventDate = EventStartDate.getTime() / 1000;
       } catch (ParseException ex) {
         addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
       }
 
       // Set the RUMS duration and original rated amount (for markup)
-      setRUMValue("DUR", Call_Time);
+      setRUMValue("DUR", callDuration);
       setRUMValue("SEK", origAmount);
 
       // Set the default service
@@ -377,7 +380,7 @@ public class PixipRecord extends RatingRecord {
       tmpReassemble = new StringBuffer(1024);
 
       // write the destination information back
-      // setField(DESTINATION_IDX, Destination);
+      // setField(DESTINATION_IDX, destination);
       NumberOfFields = fields.length;
 
       for (i = 0; i < NumberOfFields; i++) {
@@ -455,18 +458,18 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  Record Number         = <" + RecordNumber + ">");
       tmpDumpList.add("  Outputs               = <" + outputs + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  Call_Date             = <" + Call_Date + ">");
-      tmpDumpList.add("  Call_Time             = <" + Call_Time + ">");
+      tmpDumpList.add("  Call_Date             = <" + eventDate + ">");
+      tmpDumpList.add("  Call_Time             = <" + callDuration + ">");
       tmpDumpList.add("  A_Number              = <" + A_Number + ">");
       tmpDumpList.add("  B_Number              = <" + B_Number + ">");
       tmpDumpList.add("  OrigRatedAmount       = <" + origAmount + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  CustIDA               = <" + CustIDA + ">");
+      tmpDumpList.add("  CustIDA               = <" + custIDA + ">");
       tmpDumpList.add("  Subscription ID       = <" + subscriptionID + ">");
       tmpDumpList.add("  CDRDate               = <" + EventStartDate + ">");
       tmpDumpList.add("  B_Number Norm         = <" + B_NumberNorm + ">");
-      tmpDumpList.add("  Destination           = <" + Destination + ">");
-      tmpDumpList.add("  Zone_Cat              = <" + Zone_Cat + ">");
+      tmpDumpList.add("  Destination           = <" + destination + ">");
+      tmpDumpList.add("  Zone_Cat              = <" + destCategory + ">");
       tmpDumpList.add("  Dest_Phone_Type       = <" + Dest_Phone_Type + ">");
       tmpDumpList.add("  TimeZone              = <" + TimeZone + ">");
       tmpDumpList.add("  Supplier              = <" + supplier + ">");
@@ -474,7 +477,7 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  Markup Type           = <" + markupType + ">");
       tmpDumpList.add("  Premium               = <" + isPremium + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  UsedProduct           = <" + UsedProduct + ">");
+      tmpDumpList.add("  UsedProduct           = <" + usedProduct + ">");
       tmpDumpList.add("  Base Product          = <" + baseProduct + ">");
       tmpDumpList.add("  Overlay Product       = <" + overlay + ">");
       tmpDumpList.add("  RatedAmount           = <" + outputTotalCost + ">");
@@ -492,5 +495,9 @@ public class PixipRecord extends RatingRecord {
 
   public Object getSourceKey() {
     return null;
+  }
+
+  void mapDBDetailRecord(String[] originalColumns) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }
