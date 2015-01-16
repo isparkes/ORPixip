@@ -14,12 +14,17 @@ Dump files have been uncompressed
 
 
 mysqladmin --user=root --password=cpr create PixipDB
+
 mysql --user=root --password=cpr
 
 mysql> create user 'openrate'@'localhost' identified by 'openrate';
+
 mysql> grant all privileges on PixipDB.* to 'openrate'@'localhost';
+
 mysql> grant execute on *.* to 'openrate'@'localhost';
+
 mysql> grant create routine on PixipDB.* to 'openrate'@'localhost';
+
 mysql> exit
 
 Then load the data
