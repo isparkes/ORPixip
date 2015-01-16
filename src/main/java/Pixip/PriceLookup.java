@@ -55,31 +55,25 @@ import OpenRate.record.RecordError;
 
 /**
  * Look up the price group for the cases where we have to calculate the retail
- * price instead of just marking up.
+ * price instead of just marking up. This looks up the combination of:
+ *  - tariff
+ *  - zone result
+ *  - time result
+ *  - service
+ * 
+ * To arrive at a price group to be applied.
  */
 public class PriceLookup extends AbstractRegexMatch {
 
   // Regex search parameters - defined here for performance reasons
-
   private final String[] tmpSearchParameters = new String[2];
 
-  // -----------------------------------------------------------------------------
-  // ------------------ Start of inherited Plug In functions ---------------------
-  // -----------------------------------------------------------------------------
-  /**
-   * This is called when a data record is encountered. You should do any normal
-   * processing here.
-   *
-   * @return
-   */
   @Override
   public IRecord procValidRecord(IRecord r) {
     PixipRecord CurrentRecord = (PixipRecord) r;
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
-      // Markup types have already been dealt with, just deal with the others
-      if (CurrentRecord.isMarkup == false) {
         // Find the price group and place them into the charge packets
         for (int idx = 0; idx < CurrentRecord.getChargePacketCount(); idx++) {
           ChargePacket tmpCP = CurrentRecord.getChargePacket(idx);
@@ -103,19 +97,11 @@ public class PriceLookup extends AbstractRegexMatch {
             }
           }
         }
-      }
     }
 
     return r;
   }
 
-  /**
-   * This is called when a data record with errors is encountered. You should do
-   * any processing here that you have to do for error records, e.g. statistics,
-   * special handling, even error correction!
-   *
-   * @return
-   */
   @Override
   public IRecord procErrorRecord(IRecord r) {
     //transform((TyfonRecord)r);

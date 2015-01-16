@@ -58,113 +58,80 @@ import java.util.ArrayList;
 
 /**
  * This module performs rule driven normalisation on the B numbers, producing a
- * number which can be used in the zoning. Note that because the zoning has two
- * cases, there can be two different sorts of output:
- *  - C-Type number cases: In this case, the C is removed from the number,
- *    leaving only the C-Type prefix to be conpared to the zone model
- *  - Normal numbers: in this case the number is fully normalised, giving a
- *    result with IAC+CC+NDC. The IAC here is "00"
+ * number which can be used in the zoning. The number is fully normalised,
+ * giving a result with IAC+CC+NDC. The IAC here is "00".
+ *
+ * We run down the list of rules in the table NORM_MAP in the order defined by
+ * the RANK column. Rules of the same RANK may be executed in any order, but
+ * this is usually the natural order of the database.
+ *
+ * The first rule that fires stops the evaluation.
  *
  * @author afzaal
  */
-public class Normalisation 
-  extends AbstractRegexMatch
-{
+public class Normalisation
+        extends AbstractRegexMatch {
+
   // this is used for the lookup
   String[] tmpSearchParameters = new String[2];
-  
-  // -----------------------------------------------------------------------------
-  // ------------------ Start of inherited Plug In functions ---------------------
-  // -----------------------------------------------------------------------------
 
- /**
-  * This is called when a data record is encountered. You should do any normal
-  * processing here.
-  * 
-  * @return The processed record
-  */
   @Override
-  public IRecord procValidRecord(IRecord r)
-  {
+  public IRecord procValidRecord(IRecord r) {
     String RegexGroup;
     PixipRecord CurrentRecord;
     ArrayList<String> Results;
-    
+
     CurrentRecord = (PixipRecord) r;
 
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD)
-    {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
       // ********************* B Number Normalisation *********************
       // Prepare the paramters to perform the search on
       tmpSearchParameters[0] = "";
-      tmpSearchParameters[1] = CurrentRecord.B_Number;
+      tmpSearchParameters[1] = CurrentRecord.BNumber;
 
-      RegexGroup = "TEL";
+      RegexGroup = CurrentRecord.teleserviceCode.value();
 
-      Results = getRegexMatchWithChildData(RegexGroup,tmpSearchParameters);
+      Results = getRegexMatchWithChildData(RegexGroup, tmpSearchParameters);
 
-      if ((Results != null) & (Results.size() > 1))
-      {
-        if (isValidRegexMatchResult(Results))
-        {
-          if (Results.get(0).isEmpty())
-          {
+      if ((Results != null) & (Results.size() > 1)) {
+        if (isValidRegexMatchResult(Results)) {
+          if (Results.get(0).isEmpty()) {
             // just add the prefix
-            CurrentRecord.B_NumberNorm = Results.get(1) + CurrentRecord.B_Number;
-          }
-          else
-          {
+            CurrentRecord.BNumberNorm = Results.get(1) + CurrentRecord.BNumber;
+          } else {
             // remove an old prefix and add the new prefix
-            CurrentRecord.B_NumberNorm = CurrentRecord.B_Number.replaceAll(Results.get(0), Results.get(1));
+            CurrentRecord.BNumberNorm = CurrentRecord.BNumber.replaceAll(Results.get(0), Results.get(1));
           }
-        }
-        else
-        {
+        } else {
           RecordError tmpError = new RecordError("ERR_B_NORMALISATION_LOOKUP", ErrorType.SPECIAL);
           tmpError.setModuleName(getSymbolicName());
-          tmpError.setErrorDescription(CurrentRecord.B_Number);
+          tmpError.setErrorDescription(CurrentRecord.BNumber);
           CurrentRecord.addError(tmpError);
           return r;
         }
-      }
-      else
-      {
+      } else {
         RecordError tmpError = new RecordError("ERR_B_NORMALISATION_LOOKUP", ErrorType.SPECIAL);
         tmpError.setModuleName(getSymbolicName());
-        tmpError.setErrorDescription(CurrentRecord.B_Number);
+        tmpError.setErrorDescription(CurrentRecord.BNumber);
         CurrentRecord.addError(tmpError);
         return r;
       }
-      
+
       // bnumber discard rule
-      if (CurrentRecord.B_NumberNorm.startsWith("9999"))
-      {
+      if (CurrentRecord.BNumberNorm.startsWith("9999")) {
         RecordError tmpError = new RecordError("DISC_B_NUMBER_DISCARD", ErrorType.SPECIAL);
         tmpError.setModuleName(getSymbolicName());
-        tmpError.setErrorDescription(CurrentRecord.B_Number);
+        tmpError.setErrorDescription(CurrentRecord.BNumber);
         CurrentRecord.addError(tmpError);
         return r;
-      }      
+      }
     }
 
     return r;
   }
 
- /**
-  * This is called when a data record with errors is encountered. You should do
-  * any processing here that you have to do for error records, e.g. statistics,
-  * special handling, even error correction!
-  * 
-  * @return The processed record
-  */
   @Override
-  public IRecord procErrorRecord(IRecord r)
-  {
+  public IRecord procErrorRecord(IRecord r) {
     return r;
   }
-
-  // -----------------------------------------------------------------------------
-  // ------------------------ Start of custom functions --------------------------
-  // -----------------------------------------------------------------------------
-
 }

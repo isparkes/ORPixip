@@ -57,6 +57,7 @@ package Pixip;
 import OpenRate.record.ErrorType;
 import OpenRate.record.RatingRecord;
 import OpenRate.record.RecordError;
+import static Pixip.TeleserviceCode.UNKNOWN;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,32 +65,32 @@ import java.util.ArrayList;
 /**
  * A Record corresponds to a unit of work that is being processed by the
  * pipeline. Records are created in the InputAdapter, pass through the Pipeline,
- and written out in the OutputAdapter. Any stage of the pipeline my update the
- record in any way, provided that later stages in the processing and the
- output adapter know how to treat the record they receive.
-
- As an alternative, you may define a less flexible record format as you wish
-
- and fill in the fields as required, but this costs performance.
-
- Generally, the record should know how to handle the following operations by
- linking the appropriate method:
-
- mapOriginalData() [mandatory] ----------------- Transformation from a flat
- record as read by the input adapter to a formatted record.
-
- unmapOriginalData() [mandatory if you wish to write output files]
- ------------------- Transformation from a formatted record to a flat record
- ready for output.
-
- getDumpInfo() [optional] ------------- Preparation of the dump equivalent of
- the formatted record, ready for dumping out to a dump file.
-
- In this simple example, we require only to read the "B-Number", and write the
- "destination" as a result of this. Because of the simplicity of the example
- we do not perform a full mapping, we just handle the fields we want directly,
- which is one of the advantages of the BBPA model (map as much as you want or
- as little as you have to).
+ * and written out in the OutputAdapter. Any stage of the pipeline my update the
+ * record in any way, provided that later stages in the processing and the
+ * output adapter know how to treat the record they receive.
+ *
+ * As an alternative, you may define a less flexible record format as you wish
+ *
+ * and fill in the fields as required, but this costs performance.
+ *
+ * Generally, the record should know how to handle the following operations by
+ * linking the appropriate method:
+ *
+ * mapOriginalData() [mandatory] ----------------- Transformation from a flat
+ * record as read by the input adapter to a formatted record.
+ *
+ * unmapOriginalData() [mandatory if you wish to write output files]
+ * ------------------- Transformation from a formatted record to a flat record
+ * ready for output.
+ *
+ * getDumpInfo() [optional] ------------- Preparation of the dump equivalent of
+ * the formatted record, ready for dumping out to a dump file.
+ *
+ * In this simple example, we require only to read the "B-Number", and write the
+ * "destination" as a result of this. Because of the simplicity of the example
+ * we do not perform a full mapping, we just handle the fields we want directly,
+ * which is one of the advantages of the BBPA model (map as much as you want or
+ * as little as you have to).
  *
  */
 public class PixipRecord extends RatingRecord {
@@ -115,88 +116,88 @@ public class PixipRecord extends RatingRecord {
 
   // Detail Records
   private final static int FIELD_V_COUNT = 80;
-  private final static int IDX_mtn_cdr_id                =  0; //  0
-  private final static int IDX_ANUMBER                   =  1; //  1
-  private final static int IDX_BNUMBER                   =  2; //  2
-  private final static int IDX_CALL_DATE                 =  3; //  3
-  private final static int IDX_CALL_DURATION             =  4; //  4
-  private final static int IDX_IMEI                      = -1; //  5
-  private final static int IDX_IMSI                      = -1; //  6
-  private final static int IDX_CHARGE_MAIN_ACCT          =  5; //  7
-  private final static int IDX_ACCT_VALUE_BEFORE_CALL    = -1; //  8
-  private final static int IDX_ACCT_VALUE_AFTER_CALL     = -1; //  9
-  private final static int IDX_CHARGE_DA1                = -1; // 10
-  private final static int IDX_DA1_ACCT_BAL_BEFORE_CALL  = -1; // 11
-  private final static int IDX_DA1_ACCT_BAL_AFTER_CALL   = -1; // 12
-  private final static int IDX_CHARGE_DA2                = -1; // 13
-  private final static int IDX_DA2_ACCT_BAL_BEFORE_CALL  = -1; // 14
-  private final static int IDX_DA2_ACCT_BAL_AFTER_CALL   = -1; // 15
-  private final static int IDX_CHARGE_DA3                = -1; // 16
-  private final static int IDX_DA3_ACCT_BAL_BEFORE_CALL  = -1; // 17
-  private final static int IDX_DA3_ACCT_BAL_AFTER_CALL   = -1; // 18
-  private final static int IDX_CHARGE_DA4                = -1; // 19
-  private final static int IDX_DA4_ACCT_BAL_BEFORE_CALL  = -1; // 20
-  private final static int IDX_DA4_ACCT_BAL_AFTER_CALL   = -1; // 21
-  private final static int IDX_CHARGE_DA5                = -1; // 22
-  private final static int IDX_DA5_ACCT_BAL_BEFORE_CALL  = -1; // 23
-  private final static int IDX_DA5_ACCT_BAL_AFTER_CALL   = -1; // 24
-  private final static int IDX_CHARGE_DA6                = -1; // 25
-  private final static int IDX_DA6_ACCT_BAL_BEFORE_CALL  = -1; // 26
-  private final static int IDX_DA6_ACCT_BAL_AFTER_CALL   = -1; // 27
-  private final static int IDX_CHARGE_DA7                = -1; // 28
-  private final static int IDX_DA7_ACCT_BAL_BEFORE_CALL  = -1; // 29
-  private final static int IDX_DA7_ACCT_BAL_AFTER_CALL   = -1; // 30
-  private final static int IDX_CHARGE_DA8                = -1; // 31
-  private final static int IDX_DA8_ACCT_BAL_BEFORE_CALL  = -1; // 32
-  private final static int IDX_DA8_ACCT_BAL_AFTER_CALL   = -1; // 33
-  private final static int IDX_CHARGE_DA9                = -1; // 34
-  private final static int IDX_DA9_ACCT_BAL_BEFORE_CALL  = -1; // 35
-  private final static int IDX_DA9_ACCT_BAL_AFTER_CALL   = -1; // 36
-  private final static int IDX_CHARGE_DA10               = -1; // 37
+  private final static int IDX_mtn_cdr_id = 0; //  0
+  private final static int IDX_ANUMBER = 1; //  1
+  private final static int IDX_BNUMBER = 2; //  2
+  private final static int IDX_CALL_DATE = 3; //  3
+  private final static int IDX_CALL_DURATION = 4; //  4
+  private final static int IDX_IMEI = -1; //  5
+  private final static int IDX_IMSI = -1; //  6
+  private final static int IDX_CHARGE_MAIN_ACCT = 5; //  7
+  private final static int IDX_ACCT_VALUE_BEFORE_CALL = -1; //  8
+  private final static int IDX_ACCT_VALUE_AFTER_CALL = -1; //  9
+  private final static int IDX_CHARGE_DA1 = -1; // 10
+  private final static int IDX_DA1_ACCT_BAL_BEFORE_CALL = -1; // 11
+  private final static int IDX_DA1_ACCT_BAL_AFTER_CALL = -1; // 12
+  private final static int IDX_CHARGE_DA2 = -1; // 13
+  private final static int IDX_DA2_ACCT_BAL_BEFORE_CALL = -1; // 14
+  private final static int IDX_DA2_ACCT_BAL_AFTER_CALL = -1; // 15
+  private final static int IDX_CHARGE_DA3 = -1; // 16
+  private final static int IDX_DA3_ACCT_BAL_BEFORE_CALL = -1; // 17
+  private final static int IDX_DA3_ACCT_BAL_AFTER_CALL = -1; // 18
+  private final static int IDX_CHARGE_DA4 = -1; // 19
+  private final static int IDX_DA4_ACCT_BAL_BEFORE_CALL = -1; // 20
+  private final static int IDX_DA4_ACCT_BAL_AFTER_CALL = -1; // 21
+  private final static int IDX_CHARGE_DA5 = -1; // 22
+  private final static int IDX_DA5_ACCT_BAL_BEFORE_CALL = -1; // 23
+  private final static int IDX_DA5_ACCT_BAL_AFTER_CALL = -1; // 24
+  private final static int IDX_CHARGE_DA6 = -1; // 25
+  private final static int IDX_DA6_ACCT_BAL_BEFORE_CALL = -1; // 26
+  private final static int IDX_DA6_ACCT_BAL_AFTER_CALL = -1; // 27
+  private final static int IDX_CHARGE_DA7 = -1; // 28
+  private final static int IDX_DA7_ACCT_BAL_BEFORE_CALL = -1; // 29
+  private final static int IDX_DA7_ACCT_BAL_AFTER_CALL = -1; // 30
+  private final static int IDX_CHARGE_DA8 = -1; // 31
+  private final static int IDX_DA8_ACCT_BAL_BEFORE_CALL = -1; // 32
+  private final static int IDX_DA8_ACCT_BAL_AFTER_CALL = -1; // 33
+  private final static int IDX_CHARGE_DA9 = -1; // 34
+  private final static int IDX_DA9_ACCT_BAL_BEFORE_CALL = -1; // 35
+  private final static int IDX_DA9_ACCT_BAL_AFTER_CALL = -1; // 36
+  private final static int IDX_CHARGE_DA10 = -1; // 37
   private final static int IDX_DA10_ACCT_BAL_BEFORE_CALL = -1; // 38
-  private final static int IDX_DA10_ACCT_BAL_AFTER_CALL  = -1; // 39
-  private final static int IDX_CHARGE_DA11               = -1; // 40
+  private final static int IDX_DA10_ACCT_BAL_AFTER_CALL = -1; // 39
+  private final static int IDX_CHARGE_DA11 = -1; // 40
   private final static int IDX_DA11_ACCT_BAL_BEFORE_CALL = -1; // 41
-  private final static int IDX_DA11_ACCT_BAL_AFTER_CALL  = -1; // 42
-  private final static int IDX_CHARGE_DA12               = -1; // 43
+  private final static int IDX_DA11_ACCT_BAL_AFTER_CALL = -1; // 42
+  private final static int IDX_CHARGE_DA12 = -1; // 43
   private final static int IDX_DA12_ACCT_BAL_BEFORE_CALL = -1; // 44
-  private final static int IDX_DA12_ACCT_BAL_AFTER_CALL  = -1; // 45
-  private final static int IDX_CHARGE_DA13               = -1; // 46
+  private final static int IDX_DA12_ACCT_BAL_AFTER_CALL = -1; // 45
+  private final static int IDX_CHARGE_DA13 = -1; // 46
   private final static int IDX_DA13_ACCT_BAL_BEFORE_CALL = -1; // 47
-  private final static int IDX_DA13_ACCT_BAL_AFTER_CALL  = -1; // 48
-  private final static int IDX_CHARGE_DA14               = -1; // 49
+  private final static int IDX_DA13_ACCT_BAL_AFTER_CALL = -1; // 48
+  private final static int IDX_CHARGE_DA14 = -1; // 49
   private final static int IDX_DA14_ACCT_BAL_BEFORE_CALL = -1; // 50
-  private final static int IDX_DA14_ACCT_BAL_AFTER_CALL  = -1; // 51
-  private final static int IDX_CHARGE_DA15               = -1; // 52
+  private final static int IDX_DA14_ACCT_BAL_AFTER_CALL = -1; // 51
+  private final static int IDX_CHARGE_DA15 = -1; // 52
   private final static int IDX_DA15_ACCT_BAL_BEFORE_CALL = -1; // 53
-  private final static int IDX_DA15_ACCT_BAL_AFTER_CALL  = -1; // 54
-  private final static int IDX_CALL_TYPE                 =  6; // 55
-  private final static int IDX_PARTNER_OPTR              =  7; // 56
-  private final static int IDX_FNF_IND                   =  8; // 57
-  private final static int IDX_SERVICE_CLASS             =  9; // 58
-  private final static int IDX_TELESERVICE_CODE          = 10; // 59
-  private final static int IDX_TRAFFIC_TYPE              = 11; // 60
-  private final static int IDX_CFW_IND                   = -1; // 61
-  private final static int IDX_ORIGINATING_LOC_INFO      = -1; // 62
-  private final static int IDX_ACCUMULATOR_ID            = -1; // 63
-  private final static int IDX_ACCUMULATOR_VALUE_BEFORE  = -1; // 64
-  private final static int IDX_ACCUMULATOR_VALUE_AFTER   = -1; // 65
-  private final static int IDX_CELL_SITE_ID              = -1; // 66
-  private final static int IDX_DDS                       = -1; // 67
-  private final static int IDX_SERVICE_OFFERINGS         = -1; // 68
-  private final static int IDX_PRODUCT_ID                = -1; // 69
-  private final static int IDX_COMMUNITY_IND             = -1; // 70
-  private final static int IDX_CHARGED_PARTY_NUMBER      = -1; // 71
-  private final static int IDX_GSM_CALL_REF              = -1; // 72
-  private final static int IDX_FILE_ID                   = -1; // 73
-  private final static int IDX_SESSIONID                 = -1; // 74
-  private final static int IDX_CLIENTIP                  = -1; // 75
-  private final static int IDX_FIELD1                    = -1; // 76
-  private final static int IDX_FIELD2                    = -1; // 77
-  private final static int IDX_FIELD3                    = -1; // 78
-  private final static int IDX_FIELD4                    = -1; // 79
-  private final static int IDX_FIELD5                    = -1; // 80
-  
+  private final static int IDX_DA15_ACCT_BAL_AFTER_CALL = -1; // 54
+  private final static int IDX_CALL_TYPE = 6; // 55
+  private final static int IDX_PARTNER_OPTR = 7; // 56
+  private final static int IDX_FNF_IND = 8; // 57
+  private final static int IDX_SERVICE_CLASS = 9; // 58
+  private final static int IDX_TELESERVICE_CODE = 10; // 59
+  private final static int IDX_TRAFFIC_TYPE = 11; // 60
+  private final static int IDX_CFW_IND = -1; // 61
+  private final static int IDX_ORIGINATING_LOC_INFO = -1; // 62
+  private final static int IDX_ACCUMULATOR_ID = -1; // 63
+  private final static int IDX_ACCUMULATOR_VALUE_BEFORE = -1; // 64
+  private final static int IDX_ACCUMULATOR_VALUE_AFTER = -1; // 65
+  private final static int IDX_CELL_SITE_ID = -1; // 66
+  private final static int IDX_DDS = -1; // 67
+  private final static int IDX_SERVICE_OFFERINGS = -1; // 68
+  private final static int IDX_PRODUCT_ID = -1; // 69
+  private final static int IDX_COMMUNITY_IND = -1; // 70
+  private final static int IDX_CHARGED_PARTY_NUMBER = -1; // 71
+  private final static int IDX_GSM_CALL_REF = -1; // 72
+  private final static int IDX_FILE_ID = -1; // 73
+  private final static int IDX_SESSIONID = -1; // 74
+  private final static int IDX_CLIENTIP = -1; // 75
+  private final static int IDX_FIELD1 = -1; // 76
+  private final static int IDX_FIELD2 = -1; // 77
+  private final static int IDX_FIELD3 = -1; // 78
+  private final static int IDX_FIELD4 = -1; // 79
+  private final static int IDX_FIELD5 = -1; // 80
+
   //  The record type is what allows us to determine what the records to handle
   //	are, and what to ignore. Generally you will need something of this type
   public static final String RECYCLE_TAG = "ORRECYCLE";
@@ -204,18 +205,15 @@ public class PixipRecord extends RatingRecord {
 
   // CDR related variables
   public String eventDate = null; // Date of the call
-  public int    callDuration;     // Duration of the call
-  public String A_Number;         // Raw A Number
-  public String B_Number;         // Raw B Number
-  public String B_NumberNorm;     // Normalised B number
-  public String supplier = null;  // The supplier of the call record
+  public int callDuration;     // Duration of the call
+  public String ANumber;         // Raw A Number
+  public String BNumber;         // Raw B Number
+  public String BNumberNorm;     // Normalised B number
 
   // Rating variables
   public String destination;      // The zoning destination for the B Number
   public String destCategory;     // The category for the B Number
-  public String Dest_Phone_Type;  // The type of number
-  public String TimeZone;         // The time zone
-  public Boolean isPremium = false;
+  public String timeZone;         // The time zone
 
   // Output rated amount values
   public double origAmount = 0;
@@ -225,26 +223,23 @@ public class PixipRecord extends RatingRecord {
 
   // Internal Management Fields
   public Integer custIDA = null;    // The identifier of the A customer
-  public String subscriptionID;    // Subscription ID used for posting in billing
   public String usedProduct;       // The identifier of the product
   public String baseProduct;       // The base price plan
   public ArrayList<String> overlay; // Overlay price plan(s)
-  public String markupType;        // The type of markup, "" for none
-  public boolean isMarkup;          // Quck flag for checking if we are doing markup
   public String marginFlag;        // Used for reporting incorrect margins
 
   // The number of recycles for this record
   public int recycleCount = 0;
-  
+
   // Unique ID for this record
   public String recordId;
-  
+
   // Call scenario fields
   public String callType;
   public String partnerOperator;
   public boolean fnf = false;
   public String serviceClass;
-  public String teleserviceCode;
+  public TeleserviceCode teleserviceCode;
   public String trafficType;
 
   /**
@@ -309,8 +304,8 @@ public class PixipRecord extends RatingRecord {
     // Validate the number of fields
     if (fields.length == FIELD_V_COUNT) {
       eventDate = getField(IDX_CALL_DATE);
-      A_Number = getField(IDX_ANUMBER);
-      B_Number = getField(IDX_BNUMBER);
+      ANumber = getField(IDX_ANUMBER);
+      BNumber = getField(IDX_BNUMBER);
 
       try {
         callDuration = Integer.parseInt(getField(IDX_CALL_DURATION));
@@ -325,15 +320,15 @@ public class PixipRecord extends RatingRecord {
       }
 
       //Repair full prefix for National calls
-      if (B_Number.length() > 5 && !B_Number.substring(1, 2).matches("0") && B_Number.substring(0, 1).matches("0")) {
-        B_NumberNorm = "0046" + B_Number.substring(1, B_Number.length());
+      if (BNumber.length() > 5 && !BNumber.substring(1, 2).matches("0") && BNumber.substring(0, 1).matches("0")) {
+        BNumberNorm = "0046" + BNumber.substring(1, BNumber.length());
       } //Repair 118118 and others
-      else if (B_Number.length() < 7 && !B_Number.substring(1, 2).matches("0") && B_Number.substring(0, 2).matches("11")) {
-        B_NumberNorm = "0046" + B_Number;
+      else if (BNumber.length() < 7 && !BNumber.substring(1, 2).matches("0") && BNumber.substring(0, 2).matches("11")) {
+        BNumberNorm = "0046" + BNumber;
       } // International
-      else if (B_Number.startsWith("00")) {
+      else if (BNumber.startsWith("00")) {
         // Do nothing it is already right
-        B_NumberNorm = B_Number;
+        BNumberNorm = BNumber;
       } // Default error case
       else {
         addError(new RecordError("ERR_NORM_FAILED", ErrorType.DATA_VALIDATION));
@@ -467,31 +462,27 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  Record Number         = <" + RecordNumber + ">");
       tmpDumpList.add("  Outputs               = <" + outputs + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  Call_Date             = <" + eventDate + ">");
-      tmpDumpList.add("  Call_Time             = <" + callDuration + ">");
-      tmpDumpList.add("  A_Number              = <" + A_Number + ">");
-      tmpDumpList.add("  B_Number              = <" + B_Number + ">");
+      tmpDumpList.add("  Call Date             = <" + eventDate + ">");
+      tmpDumpList.add("  Call Duration         = <" + callDuration + ">");
+      tmpDumpList.add("  ANumber               = <" + ANumber + ">");
+      tmpDumpList.add("  BNumber               = <" + BNumber + ">");
       tmpDumpList.add("  OrigRatedAmount       = <" + origAmount + ">");
       tmpDumpList.add("  CallType              = <" + callType + ">");
       tmpDumpList.add("  PartnerOperator       = <" + partnerOperator + ">");
       tmpDumpList.add("  FnF                   = <" + fnf + ">");
       tmpDumpList.add("  ServiceClass          = <" + serviceClass + ">");
+      tmpDumpList.add("  TeleServiceCode       = <" + teleserviceCode + ">");
       tmpDumpList.add("  TrafficType           = <" + trafficType + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  ORRatedAmount         = <" + ratedAmount + ">");      
+      tmpDumpList.add("  BNumberNormalised     = <" + BNumberNorm + ">");
+      tmpDumpList.add("  ORRatedAmount         = <" + ratedAmount + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  CustIDA               = <" + custIDA + ">");
-      tmpDumpList.add("  Subscription ID       = <" + subscriptionID + ">");
       tmpDumpList.add("  CDRDate               = <" + EventStartDate + ">");
-      tmpDumpList.add("  B_Number Norm         = <" + B_NumberNorm + ">");
+      tmpDumpList.add("  BNumber Norm          = <" + BNumberNorm + ">");
       tmpDumpList.add("  Destination           = <" + destination + ">");
-      tmpDumpList.add("  Zone_Cat              = <" + destCategory + ">");
-      tmpDumpList.add("  Dest_Phone_Type       = <" + Dest_Phone_Type + ">");
-      tmpDumpList.add("  TimeZone              = <" + TimeZone + ">");
-      tmpDumpList.add("  Supplier              = <" + supplier + ">");
-      tmpDumpList.add("  Markup                = <" + isMarkup + ">");
-      tmpDumpList.add("  Markup Type           = <" + markupType + ">");
-      tmpDumpList.add("  Premium               = <" + isPremium + ">");
+      tmpDumpList.add("  Destination Category  = <" + destCategory + ">");
+      tmpDumpList.add("  TimeZone              = <" + timeZone + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  UsedProduct           = <" + usedProduct + ">");
       tmpDumpList.add("  Base Product          = <" + baseProduct + ">");
@@ -513,51 +504,69 @@ public class PixipRecord extends RatingRecord {
     return null;
   }
 
+  /**
+   * Map a record from the DB input adapter into the internal format.
+   *
+   * @param originalColumns The columns we got from the DB
+   */
   void mapDBDetailRecord(String[] originalColumns) {
+    // Set the record type
+    RECORD_TYPE = PixipRecord.FILE_DETAIL_RECORD;
+
     recordId = originalColumns[IDX_mtn_cdr_id];
-    A_Number = originalColumns[IDX_ANUMBER];
-    B_Number = originalColumns[IDX_BNUMBER];
-    
+    ANumber = originalColumns[IDX_ANUMBER];
+    BNumber = originalColumns[IDX_BNUMBER];
     eventDate = originalColumns[IDX_CALL_DATE];
-    
+
     try {
       // Convert date from string: 2014-12-02 16:42:21
-        SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        EventStartDate = sdfInput.parse(eventDate);
-        UTCEventDate = EventStartDate.getTime() / 1000;
-      } catch (ParseException ex) {
-        addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
-      }
+      SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      EventStartDate = sdfInput.parse(eventDate);
+      UTCEventDate = EventStartDate.getTime() / 1000;
+    } catch (ParseException ex) {
+      addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    try {
+      callDuration = Integer.parseInt(originalColumns[IDX_CALL_DURATION]);
+    } catch (NumberFormatException ex) {
+      addError(new RecordError("ERR_DURATION_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    try {
+      origAmount = Double.parseDouble(originalColumns[IDX_CHARGE_MAIN_ACCT]);
+    } catch (NumberFormatException ex) {
+      addError(new RecordError("ERR_ORIG_PRICE_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    // Call scenario fields
+    callType = originalColumns[IDX_CALL_TYPE];
+    partnerOperator = originalColumns[IDX_PARTNER_OPTR];
+
+    String tmpFnf = originalColumns[IDX_FNF_IND];
+    if (tmpFnf != null && tmpFnf.equals("1")) {
+      fnf = true;
+    }
+
+    serviceClass = originalColumns[IDX_SERVICE_CLASS];
     
-      try {
-        callDuration = Integer.parseInt(originalColumns[IDX_CALL_DURATION]);
-      } catch (NumberFormatException ex) {
-        addError(new RecordError("ERR_DURATION_INVALID", ErrorType.DATA_VALIDATION));
-      }
-      
-      try {
-        origAmount = Double.parseDouble(originalColumns[IDX_CHARGE_MAIN_ACCT]);
-      } catch (NumberFormatException ex) {
-        addError(new RecordError("ERR_ORIG_PRICE_INVALID", ErrorType.DATA_VALIDATION));
-      }
+    // Handle teleservice code
+    // TODO: Find out what null TeleserviceCode means
+    try {
+      teleserviceCode = TeleserviceCode.fromValue(originalColumns[IDX_TELESERVICE_CODE]);
+    } catch (NullPointerException ex) {
+      teleserviceCode = UNKNOWN;
+    } catch (IllegalArgumentException ex) {
+      addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
+    }
 
-      // Call scenario fields
-      callType = originalColumns[IDX_CALL_TYPE];
-      partnerOperator = originalColumns[IDX_PARTNER_OPTR];
-      
-      String tmpFnf = originalColumns[IDX_FNF_IND];
-      if (tmpFnf != null && tmpFnf.equals("1")) {
-        fnf = true;
-      }
-      
-      serviceClass = originalColumns[IDX_SERVICE_CLASS];
-      trafficType = originalColumns[IDX_TRAFFIC_TYPE];
+    trafficType = originalColumns[IDX_TRAFFIC_TYPE];
 
-      // Set the RUMS duration and original rated amount (for markup)
-      setRUMValue("DUR", callDuration);
-      setRUMValue("MONEY", origAmount);
+    // Set the RUMS duration and original rated amount (for markup)
+    setRUMValue("DUR", callDuration);
+    setRUMValue("MONEY", origAmount);
 
-      // Set the default service
-      Service = "TEL";
+    // Set the default service
+    Service = "TEL";
   }
 }

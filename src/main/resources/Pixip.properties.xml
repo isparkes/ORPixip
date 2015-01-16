@@ -42,6 +42,20 @@
 
     <!-- Processing Pipeline -->
     <Process>
+      <!-- Perform number normalisation -->
+      <NormalisationLookup>
+        <ClassName>Pixip.Normalisation</ClassName>
+        <DataCache>NormCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </NormalisationLookup>
+      
+      <!-- Lookup the destination -->
+      <ZoneDestinationLookup>
+        <ClassName>Pixip.ZoneLookup</ClassName>
+        <DataCache>ZoneDestinationCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </ZoneDestinationLookup>
+
       <!-- Dump Diagnostic Information -->
       <DumpFirst>
         <ClassName>OpenRate.process.Dump</ClassName>
@@ -135,6 +149,14 @@
           <SelectStatement>select MAP_GROUP,BAND,NUMBER,OLD_PREFIX,NEW_PREFIX from NORM_MAP order by RANK</SelectStatement>
           <KeyFields>2</KeyFields>
         </NormCache>
+
+        <!-- Number zoning -->
+        <ZoneDestinationCache>
+          <ClassName>OpenRate.cache.BestMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>PixipDB</DataSource>
+          <SelectStatement>SELECT MAP_GROUP, PREFIX, ZONE_RESULT, DESCRIPTION, CATEGORY FROM DESTINATION_MAP</SelectStatement>
+        </ZoneDestinationCache>
 
       </CacheableClass>
     </CacheFactory>

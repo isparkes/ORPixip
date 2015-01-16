@@ -52,6 +52,7 @@ import OpenRate.record.ChargePacket;
 import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
 import OpenRate.record.RecordError;
+import static Pixip.TeleserviceCode.GPRS;
 import java.util.ArrayList;
 
 /**
@@ -63,23 +64,12 @@ import java.util.ArrayList;
 public class ZoneLookup extends AbstractBestMatch {
 
   // convenience variables
-  private final int IDX_ZONE_RESULT = 0;    // Zone result used for rating
-  private final int IDX_ZONE_CAT = 1;    // Category: World
-  private final int IDX_ZONE_TYPE = 2;    // Fixed or mobile
+  private final int IDX_ZONE_RESULT = 0; // Zone result used for rating
+  private final int IDX_ZONE_CAT = 1;    // Category
 
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
   // -----------------------------------------------------------------------------
-  /**
-   * This is called when a data record is encountered. You should do any normal
-   * processing here.
-   *
-   * This transformation looks up the zone name prefix using the best match
-   * ZoneCache lookup. Because this example does not care about services, we
-   * define the service type as a default "DEF".
-   *
-   * @return
-   */
   @Override
   public IRecord procValidRecord(IRecord r) {
     RecordError tmpError;
@@ -88,93 +78,42 @@ public class ZoneLookup extends AbstractBestMatch {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
-      // Look up the destinations for the charge packets
-      // Markup types have already been dealt with, just deal with the others
-      if (CurrentRecord.isMarkup) {
-        // Try to look up, warn if fails
-        // ***************************** Info **********************************
-        // Look up the Destination from the general list
-        ZoneValue = getBestMatchWithChildData("Default", CurrentRecord.B_NumberNorm);
-
-        if (isValidBestMatchResult(ZoneValue)) {
-          // Write the information back into the record
-          CurrentRecord.destination = ZoneValue.get(IDX_ZONE_RESULT);
-          CurrentRecord.destCategory = ZoneValue.get(IDX_ZONE_CAT);
-          CurrentRecord.Dest_Phone_Type = ZoneValue.get(IDX_ZONE_TYPE);
-        } else {
-          // no zone found, warn
-          getPipeLog().warning("Could not find zone info for B Number <" + CurrentRecord.B_NumberNorm + ">");
-
-          // Default the info - should not be used
-          CurrentRecord.destination = "Markup";
-          CurrentRecord.destCategory = "Markup";
-          CurrentRecord.Dest_Phone_Type = "Markup";
-        }
-
-        // ****************************** CPs **********************************
-        // Find the price group and place them into the charge packets
-        for (int idx = 0; idx < CurrentRecord.getChargePacketCount(); idx++) {
-          ChargePacket tmpCP = CurrentRecord.getChargePacket(idx);
-
-          // Show the zone model we are using
-          tmpCP.zoneModel = tmpCP.ratePlanName;
-          tmpCP.zoneResult = "Markup";
-          tmpCP.zoneInfo = "Markup";
-        }
+      if (CurrentRecord.teleserviceCode.equals(GPRS)) {
+        // Write the information back into the record
+        CurrentRecord.destination = "GPRS";
+        CurrentRecord.destCategory = "GPRS";
       } else {
-        // ***************************** Info **********************************
         // Look up the Destination from the general list
-        ZoneValue = getBestMatchWithChildData("Default", CurrentRecord.B_NumberNorm);
+        ZoneValue = getBestMatchWithChildData("Default", CurrentRecord.BNumberNorm);
 
         if (isValidBestMatchResult(ZoneValue)) {
           // Write the information back into the record
           CurrentRecord.destination = ZoneValue.get(IDX_ZONE_RESULT);
           CurrentRecord.destCategory = ZoneValue.get(IDX_ZONE_CAT);
-          CurrentRecord.Dest_Phone_Type = ZoneValue.get(IDX_ZONE_TYPE);
         } else {
           // no zone found, add an error to the record
           tmpError = new RecordError("ERR_ZONE_LOOKUP", ErrorType.SPECIAL);
           CurrentRecord.addError(tmpError);
+          return r;
         }
+      }
 
-        // ****************************** CPs **********************************
-        // Find the price group and place them into the charge packets
-        for (int idx = 0; idx < CurrentRecord.getChargePacketCount(); idx++) {
-          ChargePacket tmpCP = CurrentRecord.getChargePacket(idx);
+      // ****************************** CPs **********************************
+      // Place the result into the charge packet(s)
+      for (int idx = 0; idx < CurrentRecord.getChargePacketCount(); idx++) {
+        ChargePacket tmpCP = CurrentRecord.getChargePacket(idx);
 
-          // Show the zone model we are using
-          tmpCP.zoneModel = tmpCP.ratePlanName;
-          ZoneValue = getBestMatchWithChildData(tmpCP.ratePlanName, CurrentRecord.B_NumberNorm);
-
-          if (this.isValidBestMatchResult(ZoneValue)) {
-            tmpCP.zoneResult = ZoneValue.get(IDX_ZONE_RESULT);
-            tmpCP.zoneInfo = ZoneValue.get(IDX_ZONE_CAT);
-          } else {
-            // if this is a base product, error, otherwise turn the CP off
-            if (tmpCP.priority == 0) {
-              // base product
-              CurrentRecord.addError(new RecordError("ERR_BASE_PROD_ZONE_MAP", ErrorType.DATA_NOT_FOUND));
-            } else {
-              // overlay product
-              tmpCP.Valid = false;
-            }
-          }
-        }
+        tmpCP.zoneResult = CurrentRecord.destination;
+        tmpCP.zoneInfo = CurrentRecord.destCategory;
       }
     }
 
     return r;
   }
 
-  /**
-   * This is called when a data record with errors is encountered. You should do
-   * any processing here that you have to do for error records, e.g. statistics,
-   * special handling, even error correction!
-   *
-   * @return
-   */
   @Override
-  public IRecord procErrorRecord(IRecord r) {
+  public IRecord procErrorRecord(IRecord r
+  ) {
     return r;
   }
 }
