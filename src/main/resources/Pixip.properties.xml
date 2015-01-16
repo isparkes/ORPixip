@@ -104,8 +104,8 @@
         <mtn_poc_db>
           <db_url>jdbc:mysql://localhost/mtn_poc</db_url>
           <driver>com.mysql.jdbc.Driver</driver>
-          <username>root</username>
-          <password>cpr</password>
+          <username>openrate</username>
+          <password>openrate</password>
           <ValidationQuery>select 1 from dual</ValidationQuery>
           <InitQuery>select 1 from dual</InitQuery>
           <TestConnectionPeriod>60</TestConnectionPeriod>
@@ -114,8 +114,8 @@
         <PixipDB>
           <db_url>jdbc:mysql://localhost/PixipDB</db_url>
           <driver>com.mysql.jdbc.Driver</driver>
-          <username>root</username>
-          <password>cpr</password>
+          <username>openrate</username>
+          <password>openrate</password>
           <ValidationQuery>select 1 from dual</ValidationQuery>
           <InitQuery>select 1 from dual</InitQuery>
           <TestConnectionPeriod>60</TestConnectionPeriod>
