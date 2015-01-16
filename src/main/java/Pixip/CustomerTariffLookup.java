@@ -3,7 +3,7 @@
  *
  * The exclusive owner of this work is Tiger Shore Management Ltd.
  * This work, including all associated documents and components
- * is Copyright Tiger Shore Management Ltd 2006-2010.
+ * is Copyright Tiger Shore Management Ltd 2006-2013.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -50,52 +50,49 @@
  */
 package Pixip;
 
-import OpenRate.process.AbstractRUMTimeMatch;
-import OpenRate.process.AbstractStubPlugIn;
-import OpenRate.record.ChargePacket;
+import OpenRate.process.AbstractRegexMatch;
+import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
+import OpenRate.record.RecordError;
+import java.util.ArrayList;
 
 /**
- * This module creates the "seed" charge packet, which is used to drive the rest
- * of the rating process. This sets:
- *  - The time splitting flag, so that we do not check time splitting
- *  - The default Time Model (all plans use the same time model)
- *  - The default Zone Model (all plans use the same zone model)
- *  - The Zone Result will be looked up during zoning
- *  - The packet type "R" = "Retail" packet for base products
- *  - The priority 0 for base products, > 0 for overlay products - we use this 
- *    to control the error handling and rating -
- *  - The service we got from the CDR values
+ * Lookup the customer tariff from the MSISDN.
  *
- * @author Ian
+ * @author ian
  */
-public class ChargePacketCreation extends AbstractStubPlugIn {
+public class CustomerTariffLookup
+        extends AbstractRegexMatch {
 
-  // -----------------------------------------------------------------------------
-  // ------------------ Start of inherited Plug In functions ---------------------
-  // -----------------------------------------------------------------------------
+  // this is used for the lookup
+  String[] tmpSearchParameters = new String[1];
+
   @Override
   public IRecord procValidRecord(IRecord r) {
-    ChargePacket tmpCP;
-    PixipRecord CurrentRecord = (PixipRecord) r;
+    String RegexGroup;
+    PixipRecord CurrentRecord;
+    String result;
+
+    CurrentRecord = (PixipRecord) r;
 
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
-      // ****************** Add the retail packet ********************
-      //	initialise the Zone Model and time model with the value 'Default'.
-      tmpCP = new ChargePacket();
-      tmpCP.packetType = "R";                         // Retail packet type
-      tmpCP.zoneModel = "Default";                    // Default
-      tmpCP.zoneResult = "";                          // Filled during zoning
-      tmpCP.timeModel = "Default";                    // Default
-      tmpCP.service = CurrentRecord.Service;          // From CDR type
-      tmpCP.ratePlanName = CurrentRecord.usedProduct; // Filled during rate plan lookup
-      tmpCP.subscriptionID = "";                      // We don't need a subscription
-      tmpCP.priority = 0;                             // Base product - prio 0
-      tmpCP.priceGroup = "";                          // Filled during price lookup
+      // ********************* B Number Normalisation *********************
+      // Prepare the paramters to perform the search on
+      tmpSearchParameters[0] = CurrentRecord.ANumber;
 
-      // Mark the record so that we do not perform splitting on it
-      tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_NO_CHECK;
-      CurrentRecord.addChargePacket(tmpCP);
+      RegexGroup = "Default";
+
+      result = getRegexMatch(RegexGroup, tmpSearchParameters);
+
+      if (isValidRegexMatchResult(result)) {
+        CurrentRecord.usedProduct = result;
+      } else {
+        RecordError tmpError = new RecordError("ERR_CUST_TARIFF_NOT_FOUND", ErrorType.SPECIAL);
+        tmpError.setModuleName(getSymbolicName());
+        tmpError.setErrorDescription(CurrentRecord.ANumber);
+        CurrentRecord.addError(tmpError);
+        return r;
+      }
     }
 
     return r;
