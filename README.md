@@ -5,11 +5,13 @@ Pixip Proof Of Concept
 
 To set up this project:
 
-Database:
-=========
+Configuration Database:
+=======================
 
 Pre-requesite:
 MySQL Installed and running
+Dump files have been uncompressed
+
 
 mysqladmin --user=root --password=cpr create PixipDB
 mysql --user=root --password=cpr
@@ -20,7 +22,23 @@ mysql> grant execute on *.* to 'openrate'@'localhost';
 mysql> grant create routine on PixipDB.* to 'openrate'@'localhost';
 mysql> exit
 
+Then load the data
+
 mysql --user=openrate --password=openrate PixipDB < Pixip-nnn.sql (replace "nnn"
+by the highest version number you find).
+
+
+CDR Database (local development):
+=================================
+mysqladmin --user=root --password=cpr create mtn_poc
+
+mysql --user=root --password=cpr
+
+mysql> grant all privileges on mtn_poc.* to 'openrate'@'localhost';
+
+Then load the data
+
+mysql --user=openrate --password=openrate mtn_poc < mtn_poc.sql (replace "nnn"
 by the highest version number you find).
 
 
