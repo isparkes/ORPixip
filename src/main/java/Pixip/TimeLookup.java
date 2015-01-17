@@ -1,9 +1,9 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
- * The exclusive owner of this work is Tiger Shore Management Ltd.
+ * The exclusive owner of this work is OpenRate Project.
  * This work, including all associated documents and components
- * is Copyright Tiger Shore Management Ltd 2006-2013.
+ * is Copyright Tiger Shore Management Limited 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -30,9 +30,6 @@
  * 8) You agree not to derive other works from the trade secrets in this work,
  *    and that any such derivation may make you liable to pay damages to the
  *    copyright holder
- * 9) You agree to use this software exclusively for evaluation purposes, and
- *    that you shall not use this software to derive commercial profit or
- *    support your business or personal activities.
  *
  * This software is provided "as is" and any expressed or impled warranties,
  * including, but not limited to, the impled warranties of merchantability
@@ -50,55 +47,49 @@
  */
 package Pixip;
 
-import OpenRate.process.AbstractRegexMatch;
+import OpenRate.exception.ProcessingException;
+import OpenRate.process.AbstractRUMTimeMatch;
 import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
 import OpenRate.record.RecordError;
 
 /**
- * Lookup the customer tariff from the MSISDN.
- *
- * @author ian
+ * This module looks up the time of day the call was made in. This allows us to
+ * determine peak and off-peak calls. The lookup happens directly from the
+ * UTCEventDate which you should set, and on the charge packet. In the case that
+ * time splitting is needed (different rating based on a call crossing into a
+ * separate time zone), the charge packet will be duplicated as necessary.
  */
-public class CustomerTariffLookup
-        extends AbstractRegexMatch {
-
-  // this is used for the lookup
-  String[] tmpSearchParameters = new String[1];
-
+public class TimeLookup extends AbstractRUMTimeMatch
+{
   @Override
-  public IRecord procValidRecord(IRecord r) {
-    String RegexGroup;
-    PixipRecord CurrentRecord;
-    String result;
+  public IRecord procValidRecord(IRecord r)
+  {
+    RecordError tmpError;
+    PixipRecord CurrentRecord = (PixipRecord)r;
 
-    CurrentRecord = (PixipRecord) r;
-
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
-      // ********************* B Number Normalisation *********************
-      // Prepare the paramters to perform the search on
-      tmpSearchParameters[0] = CurrentRecord.ANumber;
-
-      RegexGroup = "Default";
-
-      result = getRegexMatch(RegexGroup, tmpSearchParameters);
-
-      if (isValidRegexMatchResult(result)) {
-        CurrentRecord.usedProduct = result;
-      } else {
-        RecordError tmpError = new RecordError("ERR_CUST_TARIFF_NOT_FOUND", ErrorType.SPECIAL);
-        tmpError.setModuleName(getSymbolicName());
-        tmpError.setErrorDescription(CurrentRecord.ANumber);
-        CurrentRecord.addError(tmpError);
-        return r;
-      }
+    // We only transform the basic records, and leave the others alone
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD )
+    {
+        try
+        {
+            performRUMTimeMatch(CurrentRecord);
+        }
+        catch (ProcessingException pe)
+        {
+            tmpError = new RecordError("TimeZone Value Not Found for TimeModel=" + CurrentRecord.getChargePacket(0).timeModel
+                    + " EventStartDate=" + CurrentRecord.EventStartDate, ErrorType.DATA_NOT_FOUND, this.getSymbolicName());
+            CurrentRecord.addError(tmpError);
+        }
     }
 
     return r;
   }
 
   @Override
-  public IRecord procErrorRecord(IRecord r) {
+  public IRecord procErrorRecord(IRecord r)
+  {
     return r;
   }
 }
+

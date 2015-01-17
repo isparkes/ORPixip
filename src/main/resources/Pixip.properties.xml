@@ -49,13 +49,6 @@
         <BatchSize>5000</BatchSize>
       </NormalisationLookup>
       
-      <!-- Lookup the destination -->
-      <ZoneDestinationLookup>
-        <ClassName>Pixip.ZoneLookup</ClassName>
-        <DataCache>ZoneDestinationCache</DataCache>
-        <BatchSize>5000</BatchSize>
-      </ZoneDestinationLookup>
-
       <!-- Look up the customer tariff -->
       <CustomerTariffLookup>
         <ClassName>Pixip.CustomerTariffLookup</ClassName>
@@ -63,6 +56,26 @@
         <BatchSize>5000</BatchSize>
       </CustomerTariffLookup>
       
+      <!-- Create the charge packets - done here to allow time splitting -->
+      <ChargePacketCreation>
+        <ClassName>Pixip.ChargePacketCreation</ClassName>
+        <BatchSize>5000</BatchSize>
+      </ChargePacketCreation>
+
+      <!-- Lookup the time zone -->
+      <TimeMatch>
+        <ClassName>Pixip.TimeLookup</ClassName>
+        <DataCache>TimeCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </TimeMatch>
+
+      <!-- Lookup the destination -->
+      <ZoneDestinationLookup>
+        <ClassName>Pixip.ZoneLookup</ClassName>
+        <DataCache>ZoneDestinationCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </ZoneDestinationLookup>
+
       <!-- Dump Diagnostic Information -->
       <DumpFirst>
         <ClassName>OpenRate.process.Dump</ClassName>
@@ -173,6 +186,15 @@
           <SelectStatement>select 'Default',MSISDN,SERVICE_CLASS_PACKAGE from mtn_msisdn_plan</SelectStatement>
           <KeyFields>1</KeyFields>
         </CustomerTariffCache>
+
+        <!-- Time zoning -->
+        <TimeCache>
+          <ClassName>OpenRate.cache.TimeModelCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>PixipDB</DataSource>
+          <ModelSelectStatement>select TIME_MODEL_NAME_IN,DAY_IN,FROM_IN,TO_IN,RESULT_OUT from TIME_MODEL_INTERVAL</ModelSelectStatement>
+          <MappingSelectStatement>select PRODUCT_NAME_IN,TIME_MODEL_OUT from TIME_MODEL_MAP</MappingSelectStatement>
+       </TimeCache>
 
       </CacheableClass>
     </CacheFactory>

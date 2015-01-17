@@ -83,10 +83,11 @@ public class ChargePacketCreation extends AbstractStubPlugIn {
       // ****************** Add the retail packet ********************
       //	initialise the Zone Model and time model with the value 'Default'.
       tmpCP = new ChargePacket();
-      tmpCP.packetType = "R";                         // Retail packet type
+      tmpCP.packetType = "R";                         // Default - Retail packet type
       tmpCP.zoneModel = "Default";                    // Default
-      tmpCP.zoneResult = "";                          // Filled during zoning
-      tmpCP.timeModel = "Default";                    // Default
+      tmpCP.zoneResult = CurrentRecord.destination;   // Filled during zoning
+      tmpCP.timeModel = "FLAT";                       // Default
+      tmpCP.timeResult = "";                          // Filled during time lookup
       tmpCP.service = CurrentRecord.Service;          // From CDR type
       tmpCP.ratePlanName = CurrentRecord.usedProduct; // Filled during rate plan lookup
       tmpCP.subscriptionID = "";                      // We don't need a subscription
