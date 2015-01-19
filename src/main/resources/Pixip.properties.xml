@@ -76,6 +76,25 @@
         <BatchSize>5000</BatchSize>
       </ZoneDestinationLookup>
 
+      <!-- Lookup the price group for the zone and time -->
+      <PriceGroupMatch>
+        <ClassName>Pixip.PriceLookup</ClassName>
+        <DataCache>PriceCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </PriceGroupMatch>
+
+      <!-- Perform main rating -->
+      <Rating>
+        <ClassName>Pixip.Rating</ClassName>
+        <DataCache>RateCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </Rating>
+
+      <!-- roll up inpacts -->
+      <GatherRUMImpacts>
+        <ClassName>OpenRate.process.GatherRUMImpacts</ClassName>
+      </GatherRUMImpacts>
+
       <!-- Dump Diagnostic Information -->
       <DumpFirst>
         <ClassName>OpenRate.process.Dump</ClassName>
@@ -195,6 +214,23 @@
           <ModelSelectStatement>select TIME_MODEL_NAME_IN,DAY_IN,FROM_IN,TO_IN,RESULT_OUT from TIME_MODEL_INTERVAL</ModelSelectStatement>
           <MappingSelectStatement>select PRODUCT_NAME_IN,TIME_MODEL_OUT from TIME_MODEL_MAP</MappingSelectStatement>
        </TimeCache>
+
+        <!-- Price allocations -->
+       <PriceCache>
+          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>PixipDB</DataSource>
+          <SelectStatement>select MAP_GROUP,ZONE_RESULT,TIME_RESULT,PRICE_GROUP from PRICE_MAP</SelectStatement>
+        </PriceCache>
+
+        <!-- Pricing definitions for normal rating -->
+        <RateCache>
+          <ClassName>OpenRate.cache.RUMRateCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>PixipDB</DataSource>
+          <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE from PRICE_MODEL</PriceModelStatement>
+          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,RESOURCE_ID,CONSUME_FLAG from RUM_MAP order by STEP</RUMMapStatement>
+        </RateCache>
 
       </CacheableClass>
     </CacheFactory>

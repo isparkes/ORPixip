@@ -86,7 +86,7 @@ public class ChargePacketCreation extends AbstractStubPlugIn {
       tmpCP.packetType = "R";                         // Default - Retail packet type
       tmpCP.zoneModel = "Default";                    // Default
       tmpCP.zoneResult = CurrentRecord.destination;   // Filled during zoning
-      tmpCP.timeModel = "FLAT";                       // Default
+      tmpCP.timeModel = CurrentRecord.usedProduct;    // To allow time zoning based on product - mapped in table TIME_MODEL_MAP to a time model
       tmpCP.timeResult = "";                          // Filled during time lookup
       tmpCP.service = CurrentRecord.Service;          // From CDR type
       tmpCP.ratePlanName = CurrentRecord.usedProduct; // Filled during rate plan lookup

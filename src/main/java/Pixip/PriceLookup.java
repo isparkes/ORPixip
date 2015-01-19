@@ -75,9 +75,7 @@ public class PriceLookup extends AbstractRegexMatch {
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
         // Find the price group and place them into the charge packets
-        for (int idx = 0; idx < CurrentRecord.getChargePacketCount(); idx++) {
-          ChargePacket tmpCP = CurrentRecord.getChargePacket(idx);
-
+        for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
           if (tmpCP.Valid) {
             tmpSearchParameters[0] = tmpCP.zoneResult;
             tmpSearchParameters[1] = tmpCP.timeResult;
@@ -104,8 +102,6 @@ public class PriceLookup extends AbstractRegexMatch {
 
   @Override
   public IRecord procErrorRecord(IRecord r) {
-    //transform((TyfonRecord)r);
-
     return r;
   }
 }

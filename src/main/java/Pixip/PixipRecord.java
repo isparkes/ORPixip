@@ -213,7 +213,6 @@ public class PixipRecord extends RatingRecord {
   // Rating variables
   public String destination;      // The zoning destination for the B Number
   public String destCategory;     // The category for the B Number
-  public String timeZone;         // The time zone
 
   // Output rated amount values
   public double origAmount = 0;
@@ -482,7 +481,6 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  BNumber Norm          = <" + BNumberNorm + ">");
       tmpDumpList.add("  Destination           = <" + destination + ">");
       tmpDumpList.add("  Destination Category  = <" + destCategory + ">");
-      tmpDumpList.add("  TimeZone              = <" + timeZone + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  UsedProduct           = <" + usedProduct + ">");
       tmpDumpList.add("  Base Product          = <" + baseProduct + ">");
