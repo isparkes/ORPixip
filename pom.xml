@@ -40,9 +40,7 @@
         <version>2.5</version>
         <configuration>
           <includes>
-            <include>**/Tyfon/*</include>
-            <include>**/Provisioning/*</include>
-            <include>**/fraud/*</include>
+            <include>**/Pixip/*</include>
           </includes>
           <excludes>
             <exclude>**/ConfigData/**</exclude>
