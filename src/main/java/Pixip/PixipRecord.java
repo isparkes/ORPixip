@@ -219,6 +219,7 @@ public class PixipRecord extends RatingRecord {
   // Output rated amount values
   public double origAmount = 0;
   public double ratedAmount = 0;
+  public double compareAmount = 0;
 
   // Internal Management Fields
   public String usedProduct;       // The identifier of the product
@@ -479,6 +480,7 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  BNumberNormalised     = <" + BNumberNorm + ">");
       tmpDumpList.add("  ORRatedAmount         = <" + ratedAmount + ">");
+      tmpDumpList.add("  Comparison Amount     = <" + compareAmount + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  Charge DA1            = <" + chargeDA1 + ">");
       tmpDumpList.add("  Before DA1            = <" + beforeDA1 + ">");

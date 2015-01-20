@@ -14,7 +14,7 @@ delete from RATE_PRICE_PIVOT;
 -- Event based
 insert into RATE_PRICE_PIVOT (PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE)
 (
-  select distinct PRICE_GROUP,1,1,1,1,SETUP_PRICE,1 from PRICE_MAP where RATING_TYPE = 'Event'
+  select distinct PRICE_GROUP,1,0,0,1,SETUP_PRICE,1 from PRICE_MAP where RATING_TYPE = 'Event'
 );
 
 -- Duration based

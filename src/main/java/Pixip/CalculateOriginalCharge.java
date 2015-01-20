@@ -52,6 +52,8 @@ package Pixip;
 
 import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.IRecord;
+import OpenRate.utils.ConversionUtils;
+import static Pixip.TeleserviceCode.SMS;
 
 /**
  * Calculate what the original charge would have been, taking into account any
@@ -68,12 +70,28 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+      double tmpCompareAmount = CurrentRecord.origAmount;
+
       switch (CurrentRecord.teleserviceCode) {
         case VOICE:
           if (CurrentRecord.chargeDA1 > 0) {
-            CurrentRecord.origAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+            tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
           }
+          break;
+        case SMS:
+          if (CurrentRecord.chargeDA1 > 0) {
+            // VAT uplift for Post paid plans?
+            if (CurrentRecord.usedProduct.equals("ANYTIME 750")) {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+            } else {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+            }
+          }
+          break;
       }
+
+      CurrentRecord.compareAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpCompareAmount, 2);
+
     }
 
     return r;
