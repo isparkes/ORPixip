@@ -31,7 +31,10 @@
                                       FNF_IND,
                                       SERVICE_CLASS,
                                       TELESERVICE_CODE,
-                                      TRAFFIC_TYPE
+                                      TRAFFIC_TYPE,
+                                      CHARGE_DA1,
+                                      DA1_ACCT_BAL_BEFORE_CALL,
+                                      DA1_ACCT_BAL_AFTER_CALL
                               from    mtn_billing_cdr r 
                               where   FIELD3 = '1'
         </RecordSelectStatement>
@@ -91,10 +94,23 @@
       </Rating>
 
       <!-- roll up inpacts -->
-      <GatherRUMImpacts>
-        <ClassName>OpenRate.process.GatherRUMImpacts</ClassName>
-      </GatherRUMImpacts>
+      <RateRounding>
+        <ClassName>Pixip.RateRounding</ClassName>
+        <BatchSize>5000</BatchSize>
+      </RateRounding>
 
+      <!-- take into account the original value before balances -->
+      <CalculateOriginalCharge>
+        <ClassName>Pixip.CalculateOriginalCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </CalculateOriginalCharge>
+
+      <!-- compare our value with the calculated original value -->
+      <CompareCharge>
+        <ClassName>Pixip.CompareCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </CompareCharge>
+      
       <!-- Dump Diagnostic Information -->
       <DumpFirst>
         <ClassName>OpenRate.process.Dump</ClassName>

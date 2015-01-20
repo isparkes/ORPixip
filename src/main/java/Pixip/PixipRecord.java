@@ -126,9 +126,9 @@ public class PixipRecord extends RatingRecord {
   private final static int IDX_CHARGE_MAIN_ACCT = 5; //  7
   private final static int IDX_ACCT_VALUE_BEFORE_CALL = -1; //  8
   private final static int IDX_ACCT_VALUE_AFTER_CALL = -1; //  9
-  private final static int IDX_CHARGE_DA1 = -1; // 10
-  private final static int IDX_DA1_ACCT_BAL_BEFORE_CALL = -1; // 11
-  private final static int IDX_DA1_ACCT_BAL_AFTER_CALL = -1; // 12
+  private final static int IDX_CHARGE_DA1 = 12; // 10
+  private final static int IDX_DA1_ACCT_BAL_BEFORE_CALL = 13; // 11
+  private final static int IDX_DA1_ACCT_BAL_AFTER_CALL = 14; // 12
   private final static int IDX_CHARGE_DA2 = -1; // 13
   private final static int IDX_DA2_ACCT_BAL_BEFORE_CALL = -1; // 14
   private final static int IDX_DA2_ACCT_BAL_AFTER_CALL = -1; // 15
@@ -216,8 +216,6 @@ public class PixipRecord extends RatingRecord {
 
   // Output rated amount values
   public double origAmount = 0;
-  public double outputTotalCost = 0;
-  public double outputConnCost = 0;
   public double ratedAmount = 0;
 
   // Internal Management Fields
@@ -225,7 +223,6 @@ public class PixipRecord extends RatingRecord {
   public String usedProduct;       // The identifier of the product
   public String baseProduct;       // The base price plan
   public ArrayList<String> overlay; // Overlay price plan(s)
-  public String marginFlag;        // Used for reporting incorrect margins
 
   // The number of recycles for this record
   public int recycleCount = 0;
@@ -240,6 +237,11 @@ public class PixipRecord extends RatingRecord {
   public String serviceClass;
   public TeleserviceCode teleserviceCode;
   public String trafficType;
+  
+  // Counters
+  public int chargeDA1;
+  public double beforeDA1;
+  public double afterDA1;
 
   /**
    * Utility function to map a file header record
@@ -344,7 +346,7 @@ public class PixipRecord extends RatingRecord {
 
       // Set the RUMS duration and original rated amount (for markup)
       setRUMValue("DUR", callDuration);
-      setRUMValue("SEK", origAmount);
+      setRUMValue("MONEY", origAmount);
 
       // Set the default service
       Service = "TEL";
@@ -486,8 +488,6 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  UsedProduct           = <" + usedProduct + ">");
       tmpDumpList.add("  Base Product          = <" + baseProduct + ">");
       tmpDumpList.add("  Overlay Product       = <" + overlay + ">");
-      tmpDumpList.add("  RatedAmount           = <" + outputTotalCost + ">");
-      tmpDumpList.add("  RatedAmountConnFee    = <" + outputConnCost + ">");
 
       // Charge Packets
       tmpDumpList.addAll(getChargePacketsDump());
@@ -558,10 +558,50 @@ public class PixipRecord extends RatingRecord {
       addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
     }
 
+    // Traffic type might be relevant for rating
     trafficType = originalColumns[IDX_TRAFFIC_TYPE];
 
-    // Set the RUMS duration and original rated amount (for markup)
-    setRUMValue("DUR", callDuration);
+    // Set the RUMS duration/volume and original rated amount (for markup)
+    switch (teleserviceCode) {
+      case VOICE:
+        setRUMValue("DUR", callDuration);
+        break;
+      case GPRS:
+        setRUMValue("VOL", callDuration);
+        break;
+      case SMS:
+        setRUMValue("EVT", callDuration);
+        break;
+    }
+    
+    // Load counters
+    if (originalColumns[IDX_CHARGE_DA1] != null) { 
+      try {
+        chargeDA1 = Integer.parseInt(originalColumns[IDX_CHARGE_DA1]);
+      } catch (NumberFormatException ex) {
+        addError(new RecordError("ERR_CHARGE_DA1_INVALID", ErrorType.DATA_VALIDATION));
+        chargeDA1 = 0;
+      }
+    }
+    
+    if ((chargeDA1 > 0) && (originalColumns[IDX_DA1_ACCT_BAL_BEFORE_CALL] != null)) {
+      try {
+        beforeDA1 = Double.parseDouble(originalColumns[IDX_DA1_ACCT_BAL_BEFORE_CALL]);
+      } catch (NumberFormatException ex) {
+        addError(new RecordError("ERR_DA1_BEFORE_INVALID", ErrorType.DATA_VALIDATION));
+        beforeDA1 = 0;
+      }
+    }
+    
+    if ((chargeDA1 > 0) && (originalColumns[IDX_DA1_ACCT_BAL_AFTER_CALL] != null)) {
+      try {
+        afterDA1 = Double.parseDouble(originalColumns[IDX_DA1_ACCT_BAL_AFTER_CALL]);
+      } catch (NumberFormatException ex) {
+        addError(new RecordError("ERR_DA1_AFTER_INVALID", ErrorType.DATA_VALIDATION));
+        afterDA1 = 0;
+      }
+    }
+    
     setRUMValue("MONEY", origAmount);
 
     // Set the default service
