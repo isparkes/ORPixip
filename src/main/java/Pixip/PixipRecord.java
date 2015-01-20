@@ -459,6 +459,7 @@ public class PixipRecord extends RatingRecord {
     if (RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
       tmpDumpList.add("============ BEGIN RECORD ============");
       tmpDumpList.add("  Record Number         = <" + RecordNumber + ">");
+      tmpDumpList.add("  Pixip Record Id       = <" + recordId + ">");
       tmpDumpList.add("  Outputs               = <" + outputs + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  Call Date             = <" + eventDate + ">");
@@ -552,9 +553,8 @@ public class PixipRecord extends RatingRecord {
     // TODO: Find out what null TeleserviceCode means
     try {
       teleserviceCode = TeleserviceCode.fromValue(originalColumns[IDX_TELESERVICE_CODE]);
-    } catch (NullPointerException ex) {
+    } catch (NullPointerException | IllegalArgumentException ex) {
       teleserviceCode = UNKNOWN;
-    } catch (IllegalArgumentException ex) {
       addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
     }
 
