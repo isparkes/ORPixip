@@ -78,6 +78,11 @@ public class ZoneLookup extends AbstractBestMatch {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+      
+      // Put in defaults: These will be filled by world zone lookup
+      CurrentRecord.origZone = "";
+      CurrentRecord.destZone = "";
+      
       if (CurrentRecord.teleserviceCode.equals(GPRS)) {
         // Write the information back into the record
         CurrentRecord.destination = "GPRS";

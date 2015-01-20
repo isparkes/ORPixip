@@ -213,13 +213,14 @@ public class PixipRecord extends RatingRecord {
   // Rating variables
   public String destination;      // The zoning destination for the B Number
   public String destCategory;     // The category for the B Number
+  public String origZone;         // Origin world zone
+  public String destZone;         // Destination world zone
 
   // Output rated amount values
   public double origAmount = 0;
   public double ratedAmount = 0;
 
   // Internal Management Fields
-  public Integer custIDA = null;    // The identifier of the A customer
   public String usedProduct;       // The identifier of the product
   public String baseProduct;       // The base price plan
   public ArrayList<String> overlay; // Overlay price plan(s)
@@ -479,7 +480,10 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  BNumberNormalised     = <" + BNumberNorm + ">");
       tmpDumpList.add("  ORRatedAmount         = <" + ratedAmount + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  CustIDA               = <" + custIDA + ">");
+      tmpDumpList.add("  Charge DA1            = <" + chargeDA1 + ">");
+      tmpDumpList.add("  Before DA1            = <" + beforeDA1 + ">");
+      tmpDumpList.add("  After  DA1            = <" + afterDA1 + ">");
+      tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  CDRDate               = <" + EventStartDate + ">");
       tmpDumpList.add("  BNumber Norm          = <" + BNumberNorm + ">");
       tmpDumpList.add("  Destination           = <" + destination + ">");
@@ -564,12 +568,15 @@ public class PixipRecord extends RatingRecord {
     // Set the RUMS duration/volume and original rated amount (for markup)
     switch (teleserviceCode) {
       case VOICE:
+        Service = "VOICE";
         setRUMValue("DUR", callDuration);
         break;
       case GPRS:
+        Service = "GPRS";
         setRUMValue("VOL", callDuration);
         break;
       case SMS:
+        Service = "SMS";
         setRUMValue("EVT", callDuration);
         break;
     }
@@ -603,8 +610,5 @@ public class PixipRecord extends RatingRecord {
     }
     
     setRUMValue("MONEY", origAmount);
-
-    // Set the default service
-    Service = "TEL";
   }
 }

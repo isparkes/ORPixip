@@ -104,7 +104,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     ChargePacket cp;
     for (int i = 0; i < tmpInRecord.getChargePacketCount(); i++) {
       cp = tmpInRecord.getChargePacket(i);
-      rateInfo.append(cp.ratePlanName).append(",").append(cp.service).append(",").append(cp.timeResult).append(",").append(cp.priceGroup).append("#");
+      rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult).append(",").append(cp.timeResult).append(",").append(cp.priceGroup).append("#");
     }
     tmpDataRecord.setOutputColumnString(1, rateInfo.toString());
 
@@ -133,7 +133,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     tmpDataRecord.setOutputColumnCount(3);
 
     // Price
-    tmpDataRecord.setOutputColumnDouble(0, new Double("0"));
+    tmpDataRecord.setOutputColumnDouble(0, tmpInRecord.ratedAmount);
 
     // Error Description
     tmpDataRecord.setOutputColumnString(1, tmpInRecord.getErrors().get(0).getMessage());

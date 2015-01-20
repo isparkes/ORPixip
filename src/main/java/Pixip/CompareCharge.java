@@ -70,7 +70,7 @@ public class CompareCharge extends AbstractStubPlugIn {
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
 
-      if ((CurrentRecord.ratedAmount - CurrentRecord.origAmount) > 0.0001) {
+      if (Math.abs(CurrentRecord.ratedAmount - CurrentRecord.origAmount) > 0.01) {
         CurrentRecord.addError(new RecordError("ERR_COMPARISON_FAIL", ErrorType.DATA_VALIDATION));
       }
     }

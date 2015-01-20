@@ -66,7 +66,7 @@ import OpenRate.record.RecordError;
 public class PriceLookup extends AbstractRegexMatch {
 
   // Regex search parameters - defined here for performance reasons
-  private final String[] tmpSearchParameters = new String[2];
+  private final String[] tmpSearchParameters = new String[5];
 
   @Override
   public IRecord procValidRecord(IRecord r) {
@@ -74,11 +74,15 @@ public class PriceLookup extends AbstractRegexMatch {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+        tmpSearchParameters[0] = CurrentRecord.Service; 
+        tmpSearchParameters[1] = CurrentRecord.origZone; 
+        tmpSearchParameters[2] = CurrentRecord.destZone;
+        
         // Find the price group and place them into the charge packets
         for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
           if (tmpCP.Valid) {
-            tmpSearchParameters[0] = tmpCP.zoneResult;
-            tmpSearchParameters[1] = tmpCP.timeResult;
+            tmpSearchParameters[3] = tmpCP.zoneResult;
+            tmpSearchParameters[4] = tmpCP.timeResult;
             String tmpPriceGroup = getRegexMatch(tmpCP.ratePlanName, tmpSearchParameters);
 
             if (isValidRegexMatchResult(tmpPriceGroup)) {

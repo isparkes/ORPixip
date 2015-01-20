@@ -236,7 +236,8 @@
           <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
           <DataSourceType>DB</DataSourceType>
           <DataSource>PixipDB</DataSource>
-          <SelectStatement>select MAP_GROUP,ZONE_RESULT,TIME_RESULT,PRICE_GROUP from PRICE_MAP</SelectStatement>
+          <SelectStatement>select MAP_GROUP,SERVICE,ORIGIN_ZONE,DEST_ZONE,ZONE_RESULT,TIME_RESULT,PRICE_GROUP from PRICE_MAP</SelectStatement>
+          <KeyFields>5</KeyFields>
         </PriceCache>
 
         <!-- Pricing definitions for normal rating -->
