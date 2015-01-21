@@ -54,6 +54,7 @@ import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.IRecord;
 import OpenRate.utils.ConversionUtils;
 import static Pixip.TeleserviceCode.SMS;
+import static Pixip.TeleserviceCode.VOICE;
 
 /**
  * Calculate what the original charge would have been, taking into account any
@@ -88,6 +89,12 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
             }
           }
           break;
+      }
+
+      // Tariff based bonus/markup
+      if (CurrentRecord.usedProduct.equals("Pay As You Go Dynamic PSB")
+              && (CurrentRecord.teleserviceCode == VOICE)) {
+        tmpCompareAmount *= 1.05;
       }
 
       CurrentRecord.compareAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpCompareAmount, 2);

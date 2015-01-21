@@ -54,6 +54,7 @@ import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
 import OpenRate.record.RecordError;
+import OpenRate.utils.ConversionUtils;
 
 /**
  * Compare the charge we calculated with the charge we got.
@@ -67,10 +68,11 @@ public class CompareCharge extends AbstractStubPlugIn {
 
     PixipRecord CurrentRecord = (PixipRecord) r;
 
-    // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+      double delta = CurrentRecord.ratedAmount - CurrentRecord.compareAmount;
+      double comparisonValueRounded = ConversionUtils.getConversionUtilsObject().getRoundedValue(delta, 2);
 
-      if (Math.abs(CurrentRecord.ratedAmount - CurrentRecord.compareAmount) > 0.01) {
+      if (Math.abs(comparisonValueRounded) > 0.01) {
         CurrentRecord.addError(new RecordError("ERR_COMPARISON_FAIL", ErrorType.DATA_VALIDATION));
       }
     }
