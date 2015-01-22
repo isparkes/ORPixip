@@ -82,7 +82,17 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
         case SMS:
           if (CurrentRecord.chargeDA1 > 0) {
             // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.equals("ANYTIME 750")) {
+            if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+            } else {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+            }
+          }
+          break;
+        case GPRS:
+          if (CurrentRecord.chargeDA1 > 0) {
+            // VAT uplift for Post paid plans?
+            if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
               tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
             } else {
               tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
