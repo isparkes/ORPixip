@@ -77,7 +77,7 @@ public class ZoneLookup extends AbstractBestMatch {
     PixipRecord CurrentRecord = (PixipRecord) r;
 
     // We only transform the detail records, and leave the others alone
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       
       // Put in defaults: These will be filled by world zone lookup
       CurrentRecord.origZone = "";

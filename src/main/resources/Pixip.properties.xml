@@ -8,13 +8,17 @@
     <PixipPipe>
       <Active>True</Active>
     </PixipPipe>
+    
+    <XMASSCallPipe>
+      <Active>True</Active>
+    </XMASSCallPipe>
   </PipelineList>
 
   <PixipPipe>
     <!-- Input Adapter -->
     <InputAdapter>
       <PInpAdapter>
-        <ClassName>Pixip.PixipDBInputAdapter</ClassName>
+        <ClassName>Pixip.PixipBillingDBInputAdapter</ClassName>
         <BatchSize>5000</BatchSize>
         <DataSource>mtn_poc_db</DataSource>
         <ValidateStatement>select count(*) from mtn_billing_cdr</ValidateStatement>
@@ -25,17 +29,12 @@
                                       BNUMBER,
                                       CALL_DATE,
                                       CALL_DURATION,
-                                      CHARGE_MAIN_ACCT,
-                                      CALL_TYPE,
-                                      PARTNER_OPTR,
-                                      FNF_IND,
-                                      SERVICE_CLASS,
                                       TELESERVICE_CODE,
                                       TRAFFIC_TYPE,
                                       CHARGE_DA1,
                                       DA1_ACCT_BAL_BEFORE_CALL,
                                       DA1_ACCT_BAL_AFTER_CALL
-                              from    mtn_billing_cdr r 
+                              from    mtn_billing_cdr
                               where   FIELD3 = '1'
         </RecordSelectStatement>
         <CommitStatement></CommitStatement>
@@ -133,12 +132,142 @@
         <DataSource>mtn_poc_db</DataSource>
         <ValidateStatement>select 1 from mtn_billing_cdr</ValidateStatement>
         <InitStatement>select 1 from mtn_billing_cdr</InitStatement>
-        <RecordInsertStatement>update mtn_billing_cdr set FIELD3 = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement>
+        <RecordInsertStatement>call sp_UpsertBillingResult(?,?,?)</RecordInsertStatement>
+        <!--RecordInsertStatement>update mtn_billing_cdr set FIELD3 = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement-->
         <CommitStatement>update mtn_billing_cdr set FIELD3 = '3' where FIELD3 = '2'</CommitStatement>
         <RollbackStatement>update mtn_billing_cdr set FIELD3 = '-1' where FIELD3 = '2'</RollbackStatement>
       </CGoodOutAdapter>
     </OutputAdapter>
   </PixipPipe>
+
+
+
+  <XMASSCallPipe>
+    <!-- Input Adapter -->
+    <InputAdapter>
+      <XCInpAdapter>
+        <ClassName>Pixip.PixipXMASSCallDBInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select count(*) from mtn_xmass_cdr_call</ValidateStatement>
+        <RecordCountStatement>select count(*) from mtn_xmass_cdr_call where VPLMN = 'NA'</RecordCountStatement>
+        <InitStatement>update mtn_xmass_cdr_call set VPLMN = '1' where VPLMN = 'NA'</InitStatement>
+        <RecordSelectStatement>select RESULT_ID,
+                                      ANUMBER,
+                                      BNUMBER,
+                                      START_TIME,
+                                      CALL_DURATION,
+                                      'VOICE',
+                                      'MOC',
+                                      BALANCE_DIFF,
+                                      BALANCE_2_BEFORE,
+                                      BALANCE_2_AFTER
+                              from    mtn_xmass_cdr_call
+                              where   VPLMN = '1'
+        </RecordSelectStatement>
+        <CommitStatement></CommitStatement>
+        <RollbackStatement></RollbackStatement>
+      </XCInpAdapter>
+    </InputAdapter>
+
+    <!-- Processing Pipeline -->
+    <Process>
+      <!-- Perform number normalisation -->
+      <NormalisationLookup>
+        <ClassName>Pixip.Normalisation</ClassName>
+        <DataCache>NormCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </NormalisationLookup>
+      
+      <!-- Look up the customer tariff -->
+      <CustomerTariffLookup>
+        <ClassName>Pixip.CustomerTariffLookup</ClassName>
+        <DataCache>CustomerTariffCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </CustomerTariffLookup>
+      
+      <!-- Create the charge packets - done here to allow time splitting -->
+      <ChargePacketCreation>
+        <ClassName>Pixip.ChargePacketCreation</ClassName>
+        <BatchSize>5000</BatchSize>
+      </ChargePacketCreation>
+
+      <!-- Lookup the time zone -->
+      <TimeMatch>
+        <ClassName>Pixip.TimeLookup</ClassName>
+        <DataCache>TimeCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </TimeMatch>
+
+      <!-- Lookup the destination -->
+      <ZoneDestinationLookup>
+        <ClassName>Pixip.ZoneLookup</ClassName>
+        <DataCache>ZoneDestinationCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </ZoneDestinationLookup>
+
+      <!-- Lookup the price group for the zone and time -->
+      <PriceGroupMatch>
+        <ClassName>Pixip.PriceLookup</ClassName>
+        <DataCache>PriceCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </PriceGroupMatch>
+
+      <!-- Perform main rating -->
+      <Rating>
+        <ClassName>Pixip.Rating</ClassName>
+        <DataCache>RateCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </Rating>
+
+      <!-- roll up inpacts -->
+      <RateRounding>
+        <ClassName>Pixip.RateRounding</ClassName>
+        <BatchSize>5000</BatchSize>
+      </RateRounding>
+
+      <!-- take into account the original value before balances -->
+      <CalculateOriginalCharge>
+        <ClassName>Pixip.CalculateOriginalCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </CalculateOriginalCharge>
+
+      <!-- compare our value with the calculated original value -->
+      <CompareCharge>
+        <ClassName>Pixip.CompareCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </CompareCharge>
+      
+      <!-- Dump Diagnostic Information -->
+      <DumpFirst>
+        <ClassName>OpenRate.process.Dump</ClassName>
+        <Active>True</Active>
+        <DumpType>All</DumpType>
+        <DumpFilePath>Data/Pixip</DumpFilePath>
+        <DumpFilePrefix>IP_VCP_</DumpFilePrefix>
+        <DumpFileSuffix>.dump</DumpFileSuffix>
+        <BatchSize>5000</BatchSize>
+      </DumpFirst>
+    </Process>
+
+    <!-- Output Adapters -->
+    <OutputAdapter>
+      <XCGoodOutAdapter>
+        <ClassName>Pixip.PixipDBOutputAdapter</ClassName>
+        <OutputName>GoodOutput</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select 1 from mtn_xmass_cdr_call</ValidateStatement>
+        <InitStatement>select 1 from mtn_xmass_cdr_call</InitStatement>
+        <RecordInsertStatement>call sp_UpsertXMASSCallResult(?,?,?)</RecordInsertStatement>
+        <!--RecordInsertStatement>update mtn_billing_cdr set VPLMN = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement-->
+        <CommitStatement>update mtn_xmass_cdr_call set VPLMN = '3' where VPLMN = '2'</CommitStatement>
+        <RollbackStatement>update mtn_xmass_cdr_call set VPLMN = '-1' where VPLMN = '2'</RollbackStatement>
+      </XCGoodOutAdapter>
+    </OutputAdapter>
+  </XMASSCallPipe>
+
 
   <Resource>
     <LogFactory>

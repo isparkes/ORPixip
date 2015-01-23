@@ -3,7 +3,7 @@
  *
  * The exclusive owner of this work is Tiger Shore Management Ltd.
  * This work, including all associated documents and components
- * is Copyright Tiger Shore Management Ltd 2006-2013.
+ * is Copyright Tiger Shore Management Limited 2006-2012.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -36,7 +36,7 @@
  *
  * This software is provided "as is" and any expressed or impled warranties,
  * including, but not limited to, the impled warranties of merchantability
- * and fitness for a particular purpose are disclaimed. In no event shall
+ * and fitness for a particular purpose are discplaimed. In no event shall
  * Tiger Shore Management or its officially assigned agents be liable to any
  * direct, indirect, incidental, special, exemplary, or consequential damages
  * (including but not limited to, procurement of substitute goods or services;
@@ -50,55 +50,100 @@
  */
 package Pixip;
 
-import OpenRate.process.AbstractRegexMatch;
-import OpenRate.record.ErrorType;
+import OpenRate.adapter.jdbc.JDBCInputAdapter;
+import OpenRate.record.DBRecord;
 import OpenRate.record.IRecord;
-import OpenRate.record.RecordError;
+import OpenRate.record.TrailerRecord;
 
 /**
- * Lookup the customer tariff from the MSISDN.
+ * This is the input adapter reading the CDRs from a table instead of a file
  *
- * @author ian
+ * @author Afzaal
  */
-public class CustomerTariffLookup
-        extends AbstractRegexMatch {
+public class PixipBillingDBInputAdapter extends JDBCInputAdapter {
 
-  // this is used for the lookup
-  String[] tmpSearchParameters = new String[1];
+  // This is the stream record number counter which tells us the number of
+  // the compressed records
+  private int StreamRecordNumber;
 
+  // This is the object that is used to compress the records
+  PixipRecord tmpDataRecord = null;
+
+  // -----------------------------------------------------------------------------
+  // ------------------ Start of inherited Plug In functions ---------------------
+  // -----------------------------------------------------------------------------
+  /**
+   * This is called when the synthetic Header record is encountered, and has the
+   * meaning that the stream is starting. In this example we have nothing to do
+   *
+   * @return
+   */
   @Override
-  public IRecord procValidRecord(IRecord r) {
-    String RegexGroup;
-    PixipRecord CurrentRecord;
-    String result;
-
-    CurrentRecord = (PixipRecord) r;
-
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
-      // ********************* B Number Normalisation *********************
-      // Prepare the paramters to perform the search on
-      tmpSearchParameters[0] = CurrentRecord.ANumber;
-
-      RegexGroup = "Default";
-
-      result = getRegexMatch(RegexGroup, tmpSearchParameters);
-
-      if (isValidRegexMatchResult(result)) {
-        CurrentRecord.usedProduct = result;
-      } else {
-        RecordError tmpError = new RecordError("ERR_CUST_TARIFF_NOT_FOUND", ErrorType.SPECIAL);
-        tmpError.setModuleName(getSymbolicName());
-        tmpError.setErrorDescription(CurrentRecord.ANumber);
-        CurrentRecord.addError(tmpError);
-        return r;
-      }
-    }
-
+  public IRecord procHeader(IRecord r) {
+    StreamRecordNumber = 0;
     return r;
   }
 
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here. For the input adapter, we probably want to change the
+   * record type from FlatRecord to the record(s) type that we will be using in
+   * the processing pipeline.
+   *
+   * This is also the location for accumulating records into logical groups
+   * (that is records with sub records) and placing them in the pipeline as they
+   * are completed. If you receive a sub record, simply return a null record in
+   * this method to indicate that you are handling it, and that it will be
+   * purged at a later date.
+   *
+   * @return
+   */
+  @Override
+  public IRecord procValidRecord(IRecord r) {
+
+    DBRecord originalRecord = (DBRecord) r;
+    tmpDataRecord = new PixipRecord();
+
+    // map the data to the working fields
+    tmpDataRecord.mapBillingDBDetailRecord(originalRecord.getOriginalColumns());
+
+    // Return the created record
+    StreamRecordNumber++;
+    tmpDataRecord.RecordNumber = StreamRecordNumber;
+
+    return tmpDataRecord;
+
+  }
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * The input adapter is not expected to provide any records here.
+   *
+   * @return
+   */
   @Override
   public IRecord procErrorRecord(IRecord r) {
     return r;
+  }
+
+  /**
+   * This is called when the synthetic trailer record is encountered, and has
+   * the meaning that the stream is now finished. In this example, all we do
+   * is pass the control back to the transactional layer.
+   *
+   * @return
+   */
+  @Override
+  public IRecord procTrailer(IRecord r) {
+    TrailerRecord tmpTrailer;
+
+    // set the trailer record count
+    tmpTrailer = (TrailerRecord) r;
+    tmpTrailer.setRecordCount(StreamRecordNumber);
+
+    return (IRecord) tmpTrailer;
   }
 }

@@ -77,7 +77,7 @@ public class PriceHierarchyLookup extends AbstractRegexMatch {
   public IRecord procValidRecord(IRecord r) {
     PixipRecord CurrentRecord = (PixipRecord) r;
 
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       // check if this is one of the markup scenarios
       searchParams[0] = CurrentRecord.usedProduct;
       String pricePlanList = getRegexMatch("Default", searchParams);

@@ -69,7 +69,7 @@ public class TimeLookup extends AbstractRUMTimeMatch
     PixipRecord CurrentRecord = (PixipRecord)r;
 
     // We only transform the basic records, and leave the others alone
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD )
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD )
     {
         try
         {

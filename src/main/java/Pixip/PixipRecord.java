@@ -94,7 +94,8 @@ import java.util.ArrayList;
  *
  */
 public class PixipRecord extends RatingRecord {
-  // **************************** Ventelo Definition ***************************
+
+  private static final long serialVersionUID = 128373478L;
 
   // Character used as a field splitter
   private static final String FILE_FIELD_SPLITTER = ",";
@@ -107,15 +108,15 @@ public class PixipRecord extends RatingRecord {
   /**
    * Internal identifier for the detail record
    */
-  public final static int FILE_DETAIL_RECORD = 20;
+  public final static int DETAIL_RECORD = 20;
 
   /**
    * Internal identifier for the trailer record
    */
   public final static int FILE_TRAILER_RECORD = 90;
 
-  // Detail Records
-  private final static int FIELD_V_COUNT = 80;
+  // Detail Records from the billing table
+  private final static int FIELD_BILLING_COUNT = 80;
   private final static int IDX_mtn_cdr_id = 0; //  0
   private final static int IDX_ANUMBER = 1; //  1
   private final static int IDX_BNUMBER = 2; //  2
@@ -123,12 +124,12 @@ public class PixipRecord extends RatingRecord {
   private final static int IDX_CALL_DURATION = 4; //  4
   private final static int IDX_IMEI = -1; //  5
   private final static int IDX_IMSI = -1; //  6
-  private final static int IDX_CHARGE_MAIN_ACCT = 5; //  7
+  private final static int IDX_CHARGE_MAIN_ACCT = -1; //  7
   private final static int IDX_ACCT_VALUE_BEFORE_CALL = -1; //  8
   private final static int IDX_ACCT_VALUE_AFTER_CALL = -1; //  9
-  private final static int IDX_CHARGE_DA1 = 12; // 10
-  private final static int IDX_DA1_ACCT_BAL_BEFORE_CALL = 13; // 11
-  private final static int IDX_DA1_ACCT_BAL_AFTER_CALL = 14; // 12
+  private final static int IDX_CHARGE_DA1 = 8; // 10
+  private final static int IDX_DA1_ACCT_BAL_BEFORE_CALL = 9; // 11
+  private final static int IDX_DA1_ACCT_BAL_AFTER_CALL = 10; // 12
   private final static int IDX_CHARGE_DA2 = -1; // 13
   private final static int IDX_DA2_ACCT_BAL_BEFORE_CALL = -1; // 14
   private final static int IDX_DA2_ACCT_BAL_AFTER_CALL = -1; // 15
@@ -171,12 +172,12 @@ public class PixipRecord extends RatingRecord {
   private final static int IDX_CHARGE_DA15 = -1; // 52
   private final static int IDX_DA15_ACCT_BAL_BEFORE_CALL = -1; // 53
   private final static int IDX_DA15_ACCT_BAL_AFTER_CALL = -1; // 54
-  private final static int IDX_CALL_TYPE = 6; // 55
-  private final static int IDX_PARTNER_OPTR = 7; // 56
-  private final static int IDX_FNF_IND = 8; // 57
+  private final static int IDX_CALL_TYPE = -1; // 55
+  private final static int IDX_PARTNER_OPTR = -1; // 56
+  private final static int IDX_FNF_IND = -1; // 57
   private final static int IDX_SERVICE_CLASS = 9; // 58
-  private final static int IDX_TELESERVICE_CODE = 10; // 59
-  private final static int IDX_TRAFFIC_TYPE = 11; // 60
+  private final static int IDX_TELESERVICE_CODE = 5; // 59
+  private final static int IDX_TRAFFIC_TYPE = 6; // 60
   private final static int IDX_CFW_IND = -1; // 61
   private final static int IDX_ORIGINATING_LOC_INFO = -1; // 62
   private final static int IDX_ACCUMULATOR_ID = -1; // 63
@@ -198,10 +199,21 @@ public class PixipRecord extends RatingRecord {
   private final static int IDX_FIELD4 = -1; // 79
   private final static int IDX_FIELD5 = -1; // 80
 
+  // indexed from the XMASS table
+  private final static int XDX_RESULT_ID = 0;
+  private final static int XDX_ANUMBER = 1;
+  private final static int XDX_BNUMBER = 2;
+  private final static int XDX_START_TIME = 3;
+  private final static int XDX_CALL_DURATION = 4;
+  private final static int XDX_TELESERVICE_CODE = 5;
+  private final static int XDX_TRAFFIC_TYPE = 6;
+  private final static int XDX_BALANCE_DIFF = 7;
+  private final static int XDX_BALANCE_2_BEFORE = 8;
+  private final static int XDX_BALANCE_2_AFTER = 9;
+
   //  The record type is what allows us to determine what the records to handle
   //	are, and what to ignore. Generally you will need something of this type
   public static final String RECYCLE_TAG = "ORRECYCLE";
-  private static final long serialVersionUID = 1L;
 
   // CDR related variables
   public String eventDate = null; // Date of the call
@@ -233,48 +245,28 @@ public class PixipRecord extends RatingRecord {
   public String recordId;
 
   // Call scenario fields
-  public String callType;
-  public String partnerOperator;
-  public boolean fnf = false;
-  public String serviceClass;
+  //public String callType;         // Descoped for MTN
+  //public String partnerOperator;  // Descoped for MTN
+  //public boolean fnf = false;     // Descoped for MTN
+  //public String serviceClass;     // recovere from mtn_msisdn_plan
   public TeleserviceCode teleserviceCode;
   public String trafficType;
-  
+
   // Counters
   public int chargeDA1;
   public double beforeDA1;
   public double afterDA1;
 
   /**
-   * Utility function to map a file header record
-   *
-   * @param inputData The input data to map
-   */
-  public void mapVenteloHeaderRecord(String inputData) {
-    RECORD_TYPE = PixipRecord.FILE_HEADER_RECORD;
-    OriginalData = inputData;
-  }
-
-  /**
-   * Utility function to map a file trailer record
-   *
-   * @param inputData The input data to map
-   */
-  public void mapVenteloTrailerRecord(String inputData) {
-    RECORD_TYPE = PixipRecord.FILE_TRAILER_RECORD;
-    OriginalData = inputData;
-  }
-
-  /**
-   * Map a detail record from the Ventelo input source. We split up the record
-   * at the tabs, and put the information into fieldsso that we can manipulate
-   * it as we want.
+   * Map a detail record from the file input source. We split up the record at
+   * the tabs, and put the information into fields so that we can manipulate it
+   * as we want.
    *
    * @param inputData The input data to map
    */
   public void mapFileDetailRecord(String inputData) {
     // Set the record type
-    RECORD_TYPE = PixipRecord.FILE_DETAIL_RECORD;
+    RECORD_TYPE = PixipRecord.DETAIL_RECORD;
 
     // Set the original data
     OriginalData = inputData;
@@ -305,7 +297,7 @@ public class PixipRecord extends RatingRecord {
     fields = OriginalData.split(FILE_FIELD_SPLITTER);
 
     // Validate the number of fields
-    if (fields.length == FIELD_V_COUNT) {
+    if (fields.length == FIELD_BILLING_COUNT) {
       eventDate = getField(IDX_CALL_DATE);
       ANumber = getField(IDX_ANUMBER);
       BNumber = getField(IDX_BNUMBER);
@@ -379,7 +371,7 @@ public class PixipRecord extends RatingRecord {
     int i;
     StringBuffer tmpReassemble;
 
-    if (RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       // We use the string buffer for the reassembly of the record. Avoid
       // just catenating strings, as it is a LOT slower because of the
       // java internal string handling (it has to allocate/deallocate many
@@ -413,10 +405,10 @@ public class PixipRecord extends RatingRecord {
    *
    * @return The unmapped original data
    */
-  public String unmapVenteloSuspenseData() {
+  public String unmapSuspenseFileData() {
     StringBuffer tmpReassemble;
 
-    if (RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       // We use the string buffer for the reassembly of the record. Avoid
       // just catenating strings, as it is a LOT slower because of the
       // java internal string handling (it has to allocate/deallocate many
@@ -460,7 +452,7 @@ public class PixipRecord extends RatingRecord {
 
     // Format the fields
     // We only transform the detail records, and leave the others alone
-    if (RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       tmpDumpList.add("============ BEGIN RECORD ============");
       tmpDumpList.add("  Record Number         = <" + RecordNumber + ">");
       tmpDumpList.add("  Pixip Record Id       = <" + recordId + ">");
@@ -471,10 +463,10 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  ANumber               = <" + ANumber + ">");
       tmpDumpList.add("  BNumber               = <" + BNumber + ">");
       tmpDumpList.add("  OrigRatedAmount       = <" + origAmount + ">");
-      tmpDumpList.add("  CallType              = <" + callType + ">");
-      tmpDumpList.add("  PartnerOperator       = <" + partnerOperator + ">");
-      tmpDumpList.add("  FnF                   = <" + fnf + ">");
-      tmpDumpList.add("  ServiceClass          = <" + serviceClass + ">");
+//      tmpDumpList.add("  CallType              = <" + callType + ">");
+//      tmpDumpList.add("  PartnerOperator       = <" + partnerOperator + ">");
+//      tmpDumpList.add("  FnF                   = <" + fnf + ">");
+//      tmpDumpList.add("  ServiceClass          = <" + serviceClass + ">");
       tmpDumpList.add("  TeleServiceCode       = <" + teleserviceCode + ">");
       tmpDumpList.add("  TrafficType           = <" + trafficType + ">");
       tmpDumpList.add("--------------------------------------");
@@ -514,9 +506,9 @@ public class PixipRecord extends RatingRecord {
    *
    * @param originalColumns The columns we got from the DB
    */
-  void mapDBDetailRecord(String[] originalColumns) {
+  void mapBillingDBDetailRecord(String[] originalColumns) {
     // Set the record type
-    RECORD_TYPE = PixipRecord.FILE_DETAIL_RECORD;
+    RECORD_TYPE = PixipRecord.DETAIL_RECORD;
 
     recordId = originalColumns[IDX_mtn_cdr_id];
     ANumber = originalColumns[IDX_ANUMBER];
@@ -545,16 +537,13 @@ public class PixipRecord extends RatingRecord {
     }
 
     // Call scenario fields
-    callType = originalColumns[IDX_CALL_TYPE];
-    partnerOperator = originalColumns[IDX_PARTNER_OPTR];
-
-    String tmpFnf = originalColumns[IDX_FNF_IND];
-    if (tmpFnf != null && tmpFnf.equals("1")) {
-      fnf = true;
-    }
-
-    serviceClass = originalColumns[IDX_SERVICE_CLASS];
-    
+//    callType = originalColumns[IDX_CALL_TYPE];
+//    partnerOperator = originalColumns[IDX_PARTNER_OPTR];
+//    String tmpFnf = originalColumns[IDX_FNF_IND];
+//    if (tmpFnf != null && tmpFnf.equals("1")) {
+//      fnf = true;
+//    }
+//    serviceClass = originalColumns[IDX_SERVICE_CLASS];
     // Handle teleservice code
     // TODO: Find out what null TeleserviceCode means
     try {
@@ -582,9 +571,9 @@ public class PixipRecord extends RatingRecord {
         setRUMValue("EVT", callDuration);
         break;
     }
-    
+
     // Load counters
-    if (originalColumns[IDX_CHARGE_DA1] != null) { 
+    if (originalColumns[IDX_CHARGE_DA1] != null) {
       try {
         chargeDA1 = Integer.parseInt(originalColumns[IDX_CHARGE_DA1]);
       } catch (NumberFormatException ex) {
@@ -592,7 +581,7 @@ public class PixipRecord extends RatingRecord {
         chargeDA1 = 0;
       }
     }
-    
+
     if ((chargeDA1 > 0) && (originalColumns[IDX_DA1_ACCT_BAL_BEFORE_CALL] != null)) {
       try {
         beforeDA1 = Double.parseDouble(originalColumns[IDX_DA1_ACCT_BAL_BEFORE_CALL]);
@@ -601,7 +590,7 @@ public class PixipRecord extends RatingRecord {
         beforeDA1 = 0;
       }
     }
-    
+
     if ((chargeDA1 > 0) && (originalColumns[IDX_DA1_ACCT_BAL_AFTER_CALL] != null)) {
       try {
         afterDA1 = Double.parseDouble(originalColumns[IDX_DA1_ACCT_BAL_AFTER_CALL]);
@@ -610,7 +599,97 @@ public class PixipRecord extends RatingRecord {
         afterDA1 = 0;
       }
     }
+
+    setRUMValue("MONEY", origAmount);
+  }
+
+  /**
+   * Map a record from the DB input adapter into the internal format.
+   *
+   * @param originalColumns The columns we got from the DB
+   */
+  void mapXMASSCallDBDetailRecord(String[] originalColumns) {
+    // Set the record type
+    RECORD_TYPE = PixipRecord.DETAIL_RECORD;
+
+    recordId = originalColumns[XDX_RESULT_ID];
+    ANumber = originalColumns[XDX_ANUMBER].replaceAll("\\+", "");
+    BNumber = originalColumns[XDX_BNUMBER];
+    eventDate = originalColumns[XDX_START_TIME];
     
+    try {
+      // Convert date from string: 2014-12-02 16:42:21
+      SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      EventStartDate = sdfInput.parse(eventDate);
+      UTCEventDate = EventStartDate.getTime() / 1000;
+    } catch (ParseException ex) {
+      addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    try {
+      callDuration = Integer.parseInt(originalColumns[XDX_CALL_DURATION]);
+    } catch (NumberFormatException ex) {
+      addError(new RecordError("ERR_DURATION_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    // Charged amount
+    try {
+      origAmount = Double.parseDouble(originalColumns[XDX_BALANCE_DIFF]);
+    } catch (NumberFormatException ex) {
+      addError(new RecordError("ERR_ORIG_PRICE_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    // Call scenario fields
+//    callType = originalColumns[IDX_CALL_TYPE];
+//    partnerOperator = originalColumns[IDX_PARTNER_OPTR];
+//    String tmpFnf = originalColumns[IDX_FNF_IND];
+//    if (tmpFnf != null && tmpFnf.equals("1")) {
+//      fnf = true;
+//    }
+//    serviceClass = originalColumns[IDX_SERVICE_CLASS];
+    // Handle teleservice code
+    // TODO: Find out what null TeleserviceCode means
+    try {
+      teleserviceCode = TeleserviceCode.fromValue(originalColumns[XDX_TELESERVICE_CODE]);
+    } catch (NullPointerException | IllegalArgumentException ex) {
+      teleserviceCode = UNKNOWN;
+      addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
+    }
+
+    // Traffic type might be relevant for rating
+    trafficType = originalColumns[XDX_TRAFFIC_TYPE];
+
+    // Set the RUMS duration/volume and original rated amount (for markup)
+    switch (teleserviceCode) {
+      case VOICE:
+        Service = "VOICE";
+        setRUMValue("DUR", callDuration);
+        break;
+      case GPRS:
+        Service = "GPRS";
+        setRUMValue("VOL", callDuration);
+        break;
+      case SMS:
+        Service = "SMS";
+        setRUMValue("EVT", callDuration);
+        break;
+    }
+
+    
+    try {
+      beforeDA1 = Double.parseDouble(originalColumns[XDX_BALANCE_2_BEFORE]);
+    } catch (NullPointerException | NumberFormatException ex) {
+//      addError(new RecordError("ERR_DA1_BEFORE_INVALID", ErrorType.DATA_VALIDATION));
+      beforeDA1 = 0;
+    }
+
+    try {
+      afterDA1 = Double.parseDouble(originalColumns[XDX_BALANCE_2_AFTER]);
+    } catch (NullPointerException | NumberFormatException ex) {
+//      addError(new RecordError("ERR_DA1_AFTER_INVALID", ErrorType.DATA_VALIDATION));
+      afterDA1 = 0;
+    }
+
     setRUMValue("MONEY", origAmount);
   }
 }

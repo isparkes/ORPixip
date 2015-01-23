@@ -101,7 +101,7 @@ public class Rating extends AbstractRUMRateCalc {
     // time in order to know the amount of money to reserve
     // Lookup the customer for all cases
     // We only transform the detail records, and leave the others alone
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       try {
         PerformRating(CurrentRecord);
       } catch (ProcessingException pe) {

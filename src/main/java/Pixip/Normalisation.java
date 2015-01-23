@@ -83,7 +83,7 @@ public class Normalisation
 
     CurrentRecord = (PixipRecord) r;
 
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       // ********************* B Number Normalisation *********************
       // Prepare the paramters to perform the search on
       tmpSearchParameters[0] = "";

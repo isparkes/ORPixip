@@ -60,7 +60,7 @@ import OpenRate.record.TrailerRecord;
  *
  * @author Afzaal
  */
-public class PixipDBInputAdapter extends JDBCInputAdapter {
+public class PixipXMASSCallDBInputAdapter extends JDBCInputAdapter {
 
   // This is the stream record number counter which tells us the number of
   // the compressed records
@@ -105,7 +105,7 @@ public class PixipDBInputAdapter extends JDBCInputAdapter {
     tmpDataRecord = new PixipRecord();
 
     // map the data to the working fields
-    tmpDataRecord.mapDBDetailRecord(originalRecord.getOriginalColumns());
+    tmpDataRecord.mapXMASSCallDBDetailRecord(originalRecord.getOriginalColumns());
 
     // Return the created record
     StreamRecordNumber++;

@@ -79,7 +79,7 @@ public class ChargePacketCreation extends AbstractStubPlugIn {
     ChargePacket tmpCP;
     PixipRecord CurrentRecord = (PixipRecord) r;
 
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       // ****************** Add the retail packet ********************
       //	initialise the Zone Model and time model with the value 'Default'.
       tmpCP = new ChargePacket();

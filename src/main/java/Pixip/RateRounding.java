@@ -83,7 +83,7 @@ public class RateRounding extends AbstractStubPlugIn {
     PixipRecord CurrentRecord = (PixipRecord) r;
 
     // We only transform the detail records, and leave the others alone
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       // No custom rate so use the standard one
       // pick out the connect cost part and create the steps serialisation
       Iterator<ChargePacket> cpIter = CurrentRecord.getChargePackets().iterator();

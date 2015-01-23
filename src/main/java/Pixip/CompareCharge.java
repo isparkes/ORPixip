@@ -68,7 +68,7 @@ public class CompareCharge extends AbstractStubPlugIn {
 
     PixipRecord CurrentRecord = (PixipRecord) r;
 
-    if (CurrentRecord.RECORD_TYPE == PixipRecord.FILE_DETAIL_RECORD) {
+    if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       double delta = CurrentRecord.ratedAmount - CurrentRecord.compareAmount;
       double comparisonValueRounded = ConversionUtils.getConversionUtilsObject().getRoundedValue(delta, 2);
 
