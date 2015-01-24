@@ -88,8 +88,15 @@ public class ZoneLookup extends AbstractBestMatch {
         CurrentRecord.destination = "GPRS";
         CurrentRecord.destCategory = "GPRS";
       } else {
-        // Look up the Destination from the general list
-        ZoneValue = getBestMatchWithChildData("Default", CurrentRecord.BNumberNorm);
+        try {
+          // Look up the Destination from the general list
+          ZoneValue = getBestMatchWithChildData("Default", CurrentRecord.BNumberNorm);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+          // B Number containing strange characters
+          tmpError = new RecordError("ERR_INVALID_B_NUMBER", ErrorType.SPECIAL);
+          CurrentRecord.addError(tmpError);
+          return r;
+        }
 
         if (isValidBestMatchResult(ZoneValue)) {
           // Write the information back into the record

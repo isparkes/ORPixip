@@ -90,13 +90,15 @@
       </includes>
     </fileSet>
     
-    <!-- Copy over the Configuration files -->
+    <!-- Copy over the Configuration and set up files -->
     <fileSet>
-      <directory>src/main/resources/ConfigData/Pixip</directory>
+      <directory>ConfigData/Pixip</directory>
       <outputDirectory>ConfigData/Pixip</outputDirectory>
       <includes>
         <include>SP.sql</include>
-        <include>TimeModel.dat</include>
+        <include>SP_MTN_POC.sql</include>
+        <include>Create_OR_Output_Tables.sql</include>
+        <include>Pixip-008.sql.gz</include>
       </includes>
     </fileSet>
 

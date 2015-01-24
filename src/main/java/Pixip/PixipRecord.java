@@ -124,7 +124,7 @@ public class PixipRecord extends RatingRecord {
   private final static int IDX_CALL_DURATION = 4; //  4
   private final static int IDX_IMEI = -1; //  5
   private final static int IDX_IMSI = -1; //  6
-  private final static int IDX_CHARGE_MAIN_ACCT = -1; //  7
+  private final static int IDX_CHARGE_MAIN_ACCT = 7; //  7
   private final static int IDX_ACCT_VALUE_BEFORE_CALL = -1; //  8
   private final static int IDX_ACCT_VALUE_AFTER_CALL = -1; //  9
   private final static int IDX_CHARGE_DA1 = 8; // 10

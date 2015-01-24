@@ -31,6 +31,7 @@
                                       CALL_DURATION,
                                       TELESERVICE_CODE,
                                       TRAFFIC_TYPE,
+                                      CHARGE_MAIN_ACCT,
                                       CHARGE_DA1,
                                       DA1_ACCT_BAL_BEFORE_CALL,
                                       DA1_ACCT_BAL_AFTER_CALL
@@ -45,86 +46,86 @@
     <!-- Processing Pipeline -->
     <Process>
       <!-- Perform number normalisation -->
-      <NormalisationLookup>
+      <PNormalisationLookup>
         <ClassName>Pixip.Normalisation</ClassName>
         <DataCache>NormCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </NormalisationLookup>
+      </PNormalisationLookup>
       
       <!-- Look up the customer tariff -->
-      <CustomerTariffLookup>
+      <PCustomerTariffLookup>
         <ClassName>Pixip.CustomerTariffLookup</ClassName>
         <DataCache>CustomerTariffCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </CustomerTariffLookup>
+      </PCustomerTariffLookup>
       
       <!-- Create the charge packets - done here to allow time splitting -->
-      <ChargePacketCreation>
+      <PChargePacketCreation>
         <ClassName>Pixip.ChargePacketCreation</ClassName>
         <BatchSize>5000</BatchSize>
-      </ChargePacketCreation>
+      </PChargePacketCreation>
 
       <!-- Lookup the time zone -->
-      <TimeMatch>
+      <PTimeMatch>
         <ClassName>Pixip.TimeLookup</ClassName>
         <DataCache>TimeCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </TimeMatch>
+      </PTimeMatch>
 
       <!-- Lookup the destination -->
-      <ZoneDestinationLookup>
+      <PZoneDestinationLookup>
         <ClassName>Pixip.ZoneLookup</ClassName>
         <DataCache>ZoneDestinationCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </ZoneDestinationLookup>
+      </PZoneDestinationLookup>
 
       <!-- Lookup the price group for the zone and time -->
-      <PriceGroupMatch>
+      <PPriceGroupMatch>
         <ClassName>Pixip.PriceLookup</ClassName>
         <DataCache>PriceCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </PriceGroupMatch>
+      </PPriceGroupMatch>
 
       <!-- Perform main rating -->
-      <Rating>
+      <PRating>
         <ClassName>Pixip.Rating</ClassName>
         <DataCache>RateCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </Rating>
+      </PRating>
 
       <!-- roll up inpacts -->
-      <RateRounding>
+      <PRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
-      </RateRounding>
+      </PRateRounding>
 
       <!-- take into account the original value before balances -->
-      <CalculateOriginalCharge>
+      <PCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
         <BatchSize>5000</BatchSize>
-      </CalculateOriginalCharge>
+      </PCalculateOriginalCharge>
 
       <!-- compare our value with the calculated original value -->
-      <CompareCharge>
+      <PCompareCharge>
         <ClassName>Pixip.CompareCharge</ClassName>
         <BatchSize>5000</BatchSize>
-      </CompareCharge>
+      </PCompareCharge>
       
       <!-- Dump Diagnostic Information -->
-      <DumpFirst>
+      <PDumpFirst>
         <ClassName>OpenRate.process.Dump</ClassName>
         <Active>True</Active>
         <DumpType>All</DumpType>
         <DumpFilePath>Data/Pixip</DumpFilePath>
-        <DumpFilePrefix>IP_VCP_</DumpFilePrefix>
+        <DumpFilePrefix>Billing_</DumpFilePrefix>
         <DumpFileSuffix>.dump</DumpFileSuffix>
         <BatchSize>5000</BatchSize>
-      </DumpFirst>
+      </PDumpFirst>
     </Process>
 
     <!-- Output Adapters -->
     <OutputAdapter>
-      <CGoodOutAdapter>
+      <PGoodOutAdapter>
         <ClassName>Pixip.PixipDBOutputAdapter</ClassName>
         <OutputName>GoodOutput</OutputName>
         <BatchSize>5000</BatchSize>
@@ -136,7 +137,7 @@
         <!--RecordInsertStatement>update mtn_billing_cdr set FIELD3 = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement-->
         <CommitStatement>update mtn_billing_cdr set FIELD3 = '3' where FIELD3 = '2'</CommitStatement>
         <RollbackStatement>update mtn_billing_cdr set FIELD3 = '-1' where FIELD3 = '2'</RollbackStatement>
-      </CGoodOutAdapter>
+      </PGoodOutAdapter>
     </OutputAdapter>
   </PixipPipe>
 
@@ -173,81 +174,81 @@
     <!-- Processing Pipeline -->
     <Process>
       <!-- Perform number normalisation -->
-      <NormalisationLookup>
+      <XCNormalisationLookup>
         <ClassName>Pixip.Normalisation</ClassName>
         <DataCache>NormCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </NormalisationLookup>
+      </XCNormalisationLookup>
       
       <!-- Look up the customer tariff -->
-      <CustomerTariffLookup>
+      <XCCustomerTariffLookup>
         <ClassName>Pixip.CustomerTariffLookup</ClassName>
         <DataCache>CustomerTariffCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </CustomerTariffLookup>
+      </XCCustomerTariffLookup>
       
       <!-- Create the charge packets - done here to allow time splitting -->
-      <ChargePacketCreation>
+      <XCChargePacketCreation>
         <ClassName>Pixip.ChargePacketCreation</ClassName>
         <BatchSize>5000</BatchSize>
-      </ChargePacketCreation>
+      </XCChargePacketCreation>
 
       <!-- Lookup the time zone -->
-      <TimeMatch>
+      <XCTimeMatch>
         <ClassName>Pixip.TimeLookup</ClassName>
         <DataCache>TimeCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </TimeMatch>
+      </XCTimeMatch>
 
       <!-- Lookup the destination -->
-      <ZoneDestinationLookup>
+      <XCZoneDestinationLookup>
         <ClassName>Pixip.ZoneLookup</ClassName>
         <DataCache>ZoneDestinationCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </ZoneDestinationLookup>
+      </XCZoneDestinationLookup>
 
       <!-- Lookup the price group for the zone and time -->
-      <PriceGroupMatch>
+      <XCPriceGroupMatch>
         <ClassName>Pixip.PriceLookup</ClassName>
         <DataCache>PriceCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </PriceGroupMatch>
+      </XCPriceGroupMatch>
 
       <!-- Perform main rating -->
-      <Rating>
+      <XCRating>
         <ClassName>Pixip.Rating</ClassName>
         <DataCache>RateCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </Rating>
+      </XCRating>
 
       <!-- roll up inpacts -->
-      <RateRounding>
+      <XCRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
-      </RateRounding>
+      </XCRateRounding>
 
       <!-- take into account the original value before balances -->
-      <CalculateOriginalCharge>
+      <XCCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
         <BatchSize>5000</BatchSize>
-      </CalculateOriginalCharge>
+      </XCCalculateOriginalCharge>
 
       <!-- compare our value with the calculated original value -->
-      <CompareCharge>
+      <XCCompareCharge>
         <ClassName>Pixip.CompareCharge</ClassName>
         <BatchSize>5000</BatchSize>
-      </CompareCharge>
+      </XCCompareCharge>
       
       <!-- Dump Diagnostic Information -->
-      <DumpFirst>
+      <XCDumpFirst>
         <ClassName>OpenRate.process.Dump</ClassName>
         <Active>True</Active>
         <DumpType>All</DumpType>
         <DumpFilePath>Data/Pixip</DumpFilePath>
-        <DumpFilePrefix>IP_VCP_</DumpFilePrefix>
+        <DumpFilePrefix>XMASS_Call_</DumpFilePrefix>
         <DumpFileSuffix>.dump</DumpFileSuffix>
         <BatchSize>5000</BatchSize>
-      </DumpFirst>
+      </XCDumpFirst>
     </Process>
 
     <!-- Output Adapters -->
@@ -267,7 +268,6 @@
       </XCGoodOutAdapter>
     </OutputAdapter>
   </XMASSCallPipe>
-
 
   <Resource>
     <LogFactory>
