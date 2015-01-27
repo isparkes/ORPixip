@@ -98,7 +98,7 @@
         <include>SP.sql</include>
         <include>SP_MTN_POC.sql</include>
         <include>Create_OR_Output_Tables.sql</include>
-        <include>Pixip-008.sql.gz</include>
+        <include>Pixip-009.sql.gz</include>
       </includes>
     </fileSet>
 
