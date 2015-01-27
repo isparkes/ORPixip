@@ -54,6 +54,7 @@ import OpenRate.process.AbstractRUMTimeMatch;
 import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.ChargePacket;
 import OpenRate.record.IRecord;
+import static Pixip.TeleserviceCode.VOICE;
 
 /**
  * This module creates the "seed" charge packet, which is used to drive the rest
@@ -87,15 +88,17 @@ public class ChargePacketCreation extends AbstractStubPlugIn {
       tmpCP.zoneModel = "Default";                    // Default
       tmpCP.zoneResult = CurrentRecord.destination;   // Filled during zoning
       tmpCP.timeModel = CurrentRecord.usedProduct;    // To allow time zoning based on product - mapped in table TIME_MODEL_MAP to a time model
-      tmpCP.timeResult = "";                          // Filled during time lookup
       tmpCP.service = CurrentRecord.Service;          // From CDR type
       tmpCP.ratePlanName = CurrentRecord.usedProduct; // Filled during rate plan lookup
       tmpCP.subscriptionID = "";                      // We don't need a subscription
       tmpCP.priority = 0;                             // Base product - prio 0
-      tmpCP.priceGroup = "";                          // Filled during price lookup
 
-      // Mark the record so that we do not perform splitting on it
-      tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_NO_CHECK;
+      // Mark voice records so we do splitting on them, others without
+      if (CurrentRecord.teleserviceCode == VOICE) {
+        tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING;
+      } else {
+        tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_NO_CHECK;
+      }
       CurrentRecord.addChargePacket(tmpCP);
     }
 

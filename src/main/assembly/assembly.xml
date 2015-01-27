@@ -102,5 +102,14 @@
       </includes>
     </fileSet>
 
+    <!-- Copy over the scrips -->
+    <fileSet>
+      <directory>bin</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>startup.sh</include>
+        <include>shutdown.sh</include>
+      </includes>
+    </fileSet>
   </fileSets>
 </assembly>

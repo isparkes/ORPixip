@@ -329,7 +329,7 @@ public class PixipRecord extends RatingRecord {
         addError(new RecordError("ERR_NORM_FAILED", ErrorType.DATA_VALIDATION));
       }
 
-      // Get the CDR date
+      // Get the CDR start date
       try {
         SimpleDateFormat sdfInput = new SimpleDateFormat("yyyyMMddHHmmss");
         EventStartDate = sdfInput.parse(eventDate);
@@ -458,7 +458,8 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  Pixip Record Id       = <" + recordId + ">");
       tmpDumpList.add("  Outputs               = <" + outputs + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  Call Date             = <" + eventDate + ">");
+      tmpDumpList.add("  Call Start Date       = <" + EventStartDate + ">");
+      tmpDumpList.add("  Call End Date         = <" + EventEndDate + ">");
       tmpDumpList.add("  Call Duration         = <" + callDuration + ">");
       tmpDumpList.add("  ANumber               = <" + ANumber + ">");
       tmpDumpList.add("  BNumber               = <" + BNumber + ">");

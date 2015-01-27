@@ -150,21 +150,21 @@
         <ClassName>Pixip.PixipXMASSCallDBInputAdapter</ClassName>
         <BatchSize>5000</BatchSize>
         <DataSource>mtn_poc_db</DataSource>
-        <ValidateStatement>select count(*) from mtn_xmass_cdr_call</ValidateStatement>
-        <RecordCountStatement>select count(*) from mtn_xmass_cdr_call where VPLMN = 'NA'</RecordCountStatement>
-        <InitStatement>update mtn_xmass_cdr_call set VPLMN = '1' where VPLMN = 'NA'</InitStatement>
+        <ValidateStatement>select count(*) from xmass_or_cdr_call</ValidateStatement>
+        <RecordCountStatement>select count(*) from xmass_or_cdr_call where OR_RATE_CONTROL=0</RecordCountStatement>
+        <InitStatement>update xmass_or_cdr_call set OR_RATE_CONTROL=1 where OR_RATE_CONTROL=0</InitStatement>
         <RecordSelectStatement>select RESULT_ID,
                                       ANUMBER,
                                       BNUMBER,
                                       START_TIME,
                                       CALL_DURATION,
-                                      'VOICE',
-                                      'MOC',
+                                      TELESERVICE_CODE,
+                                      TRAFFIC_TYPE,
                                       BALANCE_DIFF,
                                       BALANCE_2_BEFORE,
                                       BALANCE_2_AFTER
-                              from    mtn_xmass_cdr_call
-                              where   VPLMN = '1'
+                              from    xmass_or_cdr_call
+                              where   OR_RATE_CONTROL=1
         </RecordSelectStatement>
         <CommitStatement></CommitStatement>
         <RollbackStatement></RollbackStatement>
@@ -259,12 +259,12 @@
         <BatchSize>5000</BatchSize>
         <MaxSleep>50</MaxSleep>
         <DataSource>mtn_poc_db</DataSource>
-        <ValidateStatement>select 1 from mtn_xmass_cdr_call</ValidateStatement>
-        <InitStatement>select 1 from mtn_xmass_cdr_call</InitStatement>
+        <ValidateStatement>select 1 from xmass_or_cdr_call</ValidateStatement>
+        <InitStatement>select 1 from xmass_or_cdr_call</InitStatement>
         <RecordInsertStatement>call sp_UpsertXMASSCallResult(?,?,?)</RecordInsertStatement>
         <!--RecordInsertStatement>update mtn_billing_cdr set VPLMN = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement-->
-        <CommitStatement>update mtn_xmass_cdr_call set VPLMN = '3' where VPLMN = '2'</CommitStatement>
-        <RollbackStatement>update mtn_xmass_cdr_call set VPLMN = '-1' where VPLMN = '2'</RollbackStatement>
+        <CommitStatement>update xmass_or_cdr_call set OR_RATE_CONTROL=3 where OR_RATE_CONTROL=2</CommitStatement>
+        <RollbackStatement>update xmass_or_cdr_call set OR_RATE_CONTROL=-1 where OR_RATE_CONTROL=2</RollbackStatement>
       </XCGoodOutAdapter>
     </OutputAdapter>
   </XMASSCallPipe>

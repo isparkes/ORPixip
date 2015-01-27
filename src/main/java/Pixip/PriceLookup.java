@@ -52,6 +52,7 @@ import OpenRate.record.ChargePacket;
 import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
 import OpenRate.record.RecordError;
+import OpenRate.record.TimePacket;
 
 /**
  * Look up the price group for the cases where we have to calculate the retail
@@ -81,20 +82,22 @@ public class PriceLookup extends AbstractRegexMatch {
         // Find the price group and place them into the charge packets
         for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
           if (tmpCP.Valid) {
-            tmpSearchParameters[3] = tmpCP.zoneResult;
-            tmpSearchParameters[4] = tmpCP.timeResult;
-            String tmpPriceGroup = getRegexMatch(tmpCP.ratePlanName, tmpSearchParameters);
+            for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
+              tmpSearchParameters[3] = tmpCP.zoneResult;
+              tmpSearchParameters[4] = tmpTZ.TimeResult;
+              String tmpPriceGroup = getRegexMatch(tmpCP.ratePlanName, tmpSearchParameters);
 
-            if (isValidRegexMatchResult(tmpPriceGroup)) {
-              tmpCP.priceGroup = tmpPriceGroup;
-            } else {
-              // if this is a base product, error, otherwise turn the CP off
-              if (tmpCP.priority == 0) {
-                // base product
-                CurrentRecord.addError(new RecordError("ERR_BASE_PROD_PRICE_MAP", ErrorType.DATA_NOT_FOUND));
+              if (isValidRegexMatchResult(tmpPriceGroup)) {
+                tmpTZ.priceGroup = tmpPriceGroup;
               } else {
-                // overlay product
-                tmpCP.Valid = false;
+                // if this is a base product, error, otherwise turn the CP off
+                if (tmpCP.priority == 0) {
+                  // base product
+                  CurrentRecord.addError(new RecordError("ERR_BASE_PROD_PRICE_MAP", ErrorType.DATA_NOT_FOUND));
+                } else {
+                  // overlay product
+                  tmpCP.Valid = false;
+                }
               }
             }
           }

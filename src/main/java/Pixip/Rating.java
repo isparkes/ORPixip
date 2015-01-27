@@ -103,7 +103,7 @@ public class Rating extends AbstractRUMRateCalc {
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       try {
-        PerformRating(CurrentRecord);
+        performRating(CurrentRecord);
       } catch (ProcessingException pe) {
         tmpError = new RecordError("ERR_RATE_LOOKUP", ErrorType.SPECIAL, getSymbolicName(), pe.getMessage());
         CurrentRecord.addError(tmpError);

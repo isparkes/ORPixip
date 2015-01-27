@@ -54,6 +54,7 @@ import OpenRate.adapter.jdbc.JDBCOutputAdapter;
 import OpenRate.record.ChargePacket;
 import OpenRate.record.DBRecord;
 import OpenRate.record.IRecord;
+import OpenRate.record.TimePacket;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -98,11 +99,13 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
 
     // Rate information, add all Charge Packets Info in one string seperated by #
     StringBuilder rateInfo = new StringBuilder("");
-    ChargePacket cp;
-    for (int i = 0; i < tmpInRecord.getChargePacketCount(); i++) {
-      cp = tmpInRecord.getChargePacket(i);
-      rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult).append(",").append(cp.timeResult).append(",").append(cp.priceGroup).append("#");
+    for (ChargePacket cp : tmpInRecord.getChargePackets()) {
+      rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult);
+      for (TimePacket tp : cp.getTimeZones()) {
+        rateInfo.append(tp.TimeResult).append(",").append(tp.priceGroup);
+      }
     }
+    rateInfo.append("#");
     
     // ********************* for output without upsert *************************
 //    // Price
