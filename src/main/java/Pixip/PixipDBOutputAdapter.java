@@ -100,9 +100,9 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     // Rate information, add all Charge Packets Info in one string seperated by #
     StringBuilder rateInfo = new StringBuilder("");
     for (ChargePacket cp : tmpInRecord.getChargePackets()) {
-      rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult);
+      rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult).append(",");
       for (TimePacket tp : cp.getTimeZones()) {
-        rateInfo.append(tp.TimeResult).append(",").append(tp.priceGroup);
+        rateInfo.append(tp.TimeResult).append(",").append(tp.priceGroup).append(",");
       }
     }
     rateInfo.append("#");

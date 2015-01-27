@@ -12,6 +12,18 @@
     <XMASSCallPipe>
       <Active>True</Active>
     </XMASSCallPipe>
+
+    <XMASSFtpPipe>
+      <Active>True</Active>
+    </XMASSFtpPipe>
+
+    <XMASSHttpPipe>
+      <Active>True</Active>
+    </XMASSHttpPipe>
+
+    <XMASSSmsPipe>
+      <Active>True</Active>
+    </XMASSSmsPipe>
   </PipelineList>
 
   <PixipPipe>
@@ -141,8 +153,6 @@
     </OutputAdapter>
   </PixipPipe>
 
-
-
   <XMASSCallPipe>
     <!-- Input Adapter -->
     <InputAdapter>
@@ -262,12 +272,386 @@
         <ValidateStatement>select 1 from xmass_or_cdr_call</ValidateStatement>
         <InitStatement>select 1 from xmass_or_cdr_call</InitStatement>
         <RecordInsertStatement>call sp_UpsertXMASSCallResult(?,?,?)</RecordInsertStatement>
-        <!--RecordInsertStatement>update mtn_billing_cdr set VPLMN = '2', FIELD4 =?, FIELD5 = ? where mtn_cdr_id=?</RecordInsertStatement-->
         <CommitStatement>update xmass_or_cdr_call set OR_RATE_CONTROL=3 where OR_RATE_CONTROL=2</CommitStatement>
         <RollbackStatement>update xmass_or_cdr_call set OR_RATE_CONTROL=-1 where OR_RATE_CONTROL=2</RollbackStatement>
       </XCGoodOutAdapter>
     </OutputAdapter>
   </XMASSCallPipe>
+
+  <XMASSFtpPipe>
+    <!-- Input Adapter -->
+    <InputAdapter>
+      <XFInpAdapter>
+        <ClassName>Pixip.PixipXMASSCallDBInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select count(*) from xmass_or_cdr_ftp</ValidateStatement>
+        <RecordCountStatement>select count(*) from xmass_or_cdr_ftp where OR_RATE_CONTROL=0</RecordCountStatement>
+        <InitStatement>update xmass_or_cdr_ftp set OR_RATE_CONTROL=1 where OR_RATE_CONTROL=0</InitStatement>
+        <RecordSelectStatement>select RESULT_ID,
+                                      ANUMBER,
+                                      BNUMBER,
+                                      START_TIME,
+                                      DATA_LENGTH,
+                                      TELESERVICE_CODE,
+                                      TRAFFIC_TYPE,
+                                      BALANCE_DIFF,
+                                      BALANCE_2_BEFORE,
+                                      BALANCE_2_AFTER
+                              from    xmass_or_cdr_ftp
+                              where   OR_RATE_CONTROL=1
+        </RecordSelectStatement>
+        <CommitStatement></CommitStatement>
+        <RollbackStatement></RollbackStatement>
+      </XFInpAdapter>
+    </InputAdapter>
+
+    <!-- Processing Pipeline -->
+    <Process>
+      <!-- Perform number normalisation -->
+      <XFNormalisationLookup>
+        <ClassName>Pixip.Normalisation</ClassName>
+        <DataCache>NormCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XFNormalisationLookup>
+      
+      <!-- Look up the customer tariff -->
+      <XFCustomerTariffLookup>
+        <ClassName>Pixip.CustomerTariffLookup</ClassName>
+        <DataCache>CustomerTariffCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XFCustomerTariffLookup>
+      
+      <!-- Create the charge packets - done here to allow time splitting -->
+      <XFChargePacketCreation>
+        <ClassName>Pixip.ChargePacketCreation</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFChargePacketCreation>
+
+      <!-- Lookup the time zone -->
+      <XFTimeMatch>
+        <ClassName>Pixip.TimeLookup</ClassName>
+        <DataCache>TimeCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XFTimeMatch>
+
+      <!-- Lookup the destination -->
+      <XFZoneDestinationLookup>
+        <ClassName>Pixip.ZoneLookup</ClassName>
+        <DataCache>ZoneDestinationCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XFZoneDestinationLookup>
+
+      <!-- Lookup the price group for the zone and time -->
+      <XFPriceGroupMatch>
+        <ClassName>Pixip.PriceLookup</ClassName>
+        <DataCache>PriceCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XFPriceGroupMatch>
+
+      <!-- Perform main rating -->
+      <XFRating>
+        <ClassName>Pixip.Rating</ClassName>
+        <DataCache>RateCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XFRating>
+
+      <!-- roll up inpacts -->
+      <XFRateRounding>
+        <ClassName>Pixip.RateRounding</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFRateRounding>
+
+      <!-- take into account the original value before balances -->
+      <XFCalculateOriginalCharge>
+        <ClassName>Pixip.CalculateOriginalCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFCalculateOriginalCharge>
+
+      <!-- compare our value with the calculated original value -->
+      <XFCompareCharge>
+        <ClassName>Pixip.CompareCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFCompareCharge>
+      
+      <!-- Dump Diagnostic Information -->
+      <XFDumpFirst>
+        <ClassName>OpenRate.process.Dump</ClassName>
+        <Active>True</Active>
+        <DumpType>All</DumpType>
+        <DumpFilePath>Data/Pixip</DumpFilePath>
+        <DumpFilePrefix>XMASS_Ftp_</DumpFilePrefix>
+        <DumpFileSuffix>.dump</DumpFileSuffix>
+        <BatchSize>5000</BatchSize>
+      </XFDumpFirst>
+    </Process>
+
+    <!-- Output Adapters -->
+    <OutputAdapter>
+      <XFGoodOutAdapter>
+        <ClassName>Pixip.PixipDBOutputAdapter</ClassName>
+        <OutputName>GoodOutput</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select 1 from xmass_or_cdr_ftp</ValidateStatement>
+        <InitStatement>select 1 from xmass_or_cdr_ftp</InitStatement>
+        <RecordInsertStatement>call sp_UpsertXMASSFtpResult(?,?,?)</RecordInsertStatement>
+        <CommitStatement>update xmass_or_cdr_ftp set OR_RATE_CONTROL=3 where OR_RATE_CONTROL=2</CommitStatement>
+        <RollbackStatement>update xmass_or_cdr_ftp set OR_RATE_CONTROL=-1 where OR_RATE_CONTROL=2</RollbackStatement>
+      </XFGoodOutAdapter>
+    </OutputAdapter>
+  </XMASSFtpPipe>
+
+  <XMASSHttpPipe>
+    <!-- Input Adapter -->
+    <InputAdapter>
+      <XHInpAdapter>
+        <ClassName>Pixip.PixipXMASSCallDBInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select count(*) from xmass_or_cdr_http</ValidateStatement>
+        <RecordCountStatement>select count(*) from xmass_or_cdr_http where OR_RATE_CONTROL=0</RecordCountStatement>
+        <InitStatement>update xmass_or_cdr_http set OR_RATE_CONTROL=1 where OR_RATE_CONTROL=0</InitStatement>
+        <RecordSelectStatement>select RESULT_ID,
+                                      ANUMBER,
+                                      BNUMBER,
+                                      START_TIME,
+                                      DATA_LENGTH,
+                                      TELESERVICE_CODE,
+                                      TRAFFIC_TYPE,
+                                      BALANCE_DIFF,
+                                      BALANCE_2_BEFORE,
+                                      BALANCE_2_AFTER
+                              from    xmass_or_cdr_http
+                              where   OR_RATE_CONTROL=1
+        </RecordSelectStatement>
+        <CommitStatement></CommitStatement>
+        <RollbackStatement></RollbackStatement>
+      </XHInpAdapter>
+    </InputAdapter>
+
+    <!-- Processing Pipeline -->
+    <Process>
+      <!-- Perform number normalisation -->
+      <XHNormalisationLookup>
+        <ClassName>Pixip.Normalisation</ClassName>
+        <DataCache>NormCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XHNormalisationLookup>
+      
+      <!-- Look up the customer tariff -->
+      <XHCustomerTariffLookup>
+        <ClassName>Pixip.CustomerTariffLookup</ClassName>
+        <DataCache>CustomerTariffCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XHCustomerTariffLookup>
+      
+      <!-- Create the charge packets - done here to allow time splitting -->
+      <XHChargePacketCreation>
+        <ClassName>Pixip.ChargePacketCreation</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHChargePacketCreation>
+
+      <!-- Lookup the time zone -->
+      <XHTimeMatch>
+        <ClassName>Pixip.TimeLookup</ClassName>
+        <DataCache>TimeCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XHTimeMatch>
+
+      <!-- Lookup the destination -->
+      <XHZoneDestinationLookup>
+        <ClassName>Pixip.ZoneLookup</ClassName>
+        <DataCache>ZoneDestinationCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XHZoneDestinationLookup>
+
+      <!-- Lookup the price group for the zone and time -->
+      <XHPriceGroupMatch>
+        <ClassName>Pixip.PriceLookup</ClassName>
+        <DataCache>PriceCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XHPriceGroupMatch>
+
+      <!-- Perform main rating -->
+      <XHRating>
+        <ClassName>Pixip.Rating</ClassName>
+        <DataCache>RateCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XHRating>
+
+      <!-- roll up inpacts -->
+      <XHRateRounding>
+        <ClassName>Pixip.RateRounding</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHRateRounding>
+
+      <!-- take into account the original value before balances -->
+      <XHCalculateOriginalCharge>
+        <ClassName>Pixip.CalculateOriginalCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHCalculateOriginalCharge>
+
+      <!-- compare our value with the calculated original value -->
+      <XHCompareCharge>
+        <ClassName>Pixip.CompareCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHCompareCharge>
+      
+      <!-- Dump Diagnostic Information -->
+      <XHDumpFirst>
+        <ClassName>OpenRate.process.Dump</ClassName>
+        <Active>True</Active>
+        <DumpType>All</DumpType>
+        <DumpFilePath>Data/Pixip</DumpFilePath>
+        <DumpFilePrefix>XMASS_Http_</DumpFilePrefix>
+        <DumpFileSuffix>.dump</DumpFileSuffix>
+        <BatchSize>5000</BatchSize>
+      </XHDumpFirst>
+    </Process>
+
+    <!-- Output Adapters -->
+    <OutputAdapter>
+      <XHGoodOutAdapter>
+        <ClassName>Pixip.PixipDBOutputAdapter</ClassName>
+        <OutputName>GoodOutput</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select 1 from xmass_or_cdr_http</ValidateStatement>
+        <InitStatement>select 1 from xmass_or_cdr_http</InitStatement>
+        <RecordInsertStatement>call sp_UpsertXMASSHttpResult(?,?,?)</RecordInsertStatement>
+        <CommitStatement>update xmass_or_cdr_http set OR_RATE_CONTROL=3 where OR_RATE_CONTROL=2</CommitStatement>
+        <RollbackStatement>update xmass_or_cdr_http set OR_RATE_CONTROL=-1 where OR_RATE_CONTROL=2</RollbackStatement>
+      </XHGoodOutAdapter>
+    </OutputAdapter>
+  </XMASSHttpPipe>
+
+  <XMASSSmsPipe>
+    <!-- Input Adapter -->
+    <InputAdapter>
+      <XSInpAdapter>
+        <ClassName>Pixip.PixipXMASSCallDBInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select count(*) from xmass_or_cdr_sms</ValidateStatement>
+        <RecordCountStatement>select count(*) from xmass_or_cdr_sms where OR_RATE_CONTROL=0</RecordCountStatement>
+        <InitStatement>update xmass_or_cdr_sms set OR_RATE_CONTROL=1 where OR_RATE_CONTROL=0</InitStatement>
+        <RecordSelectStatement>select RESULT_ID,
+                                      ANUMBER,
+                                      BNUMBER,
+                                      START_TIME,
+                                      CALL_DURATION,
+                                      TELESERVICE_CODE,
+                                      TRAFFIC_TYPE,
+                                      BALANCE_DIFF,
+                                      BALANCE_2_BEFORE,
+                                      BALANCE_2_AFTER
+                              from    xmass_or_cdr_sms
+                              where   OR_RATE_CONTROL=1
+        </RecordSelectStatement>
+        <CommitStatement></CommitStatement>
+        <RollbackStatement></RollbackStatement>
+      </XSInpAdapter>
+    </InputAdapter>
+
+    <!-- Processing Pipeline -->
+    <Process>
+      <!-- Perform number normalisation -->
+      <XSNormalisationLookup>
+        <ClassName>Pixip.Normalisation</ClassName>
+        <DataCache>NormCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XSNormalisationLookup>
+      
+      <!-- Look up the customer tariff -->
+      <XSCustomerTariffLookup>
+        <ClassName>Pixip.CustomerTariffLookup</ClassName>
+        <DataCache>CustomerTariffCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XSCustomerTariffLookup>
+      
+      <!-- Create the charge packets - done here to allow time splitting -->
+      <XSChargePacketCreation>
+        <ClassName>Pixip.ChargePacketCreation</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSChargePacketCreation>
+
+      <!-- Lookup the time zone -->
+      <XSTimeMatch>
+        <ClassName>Pixip.TimeLookup</ClassName>
+        <DataCache>TimeCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XSTimeMatch>
+
+      <!-- Lookup the destination -->
+      <XSZoneDestinationLookup>
+        <ClassName>Pixip.ZoneLookup</ClassName>
+        <DataCache>ZoneDestinationCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XSZoneDestinationLookup>
+
+      <!-- Lookup the price group for the zone and time -->
+      <XSPriceGroupMatch>
+        <ClassName>Pixip.PriceLookup</ClassName>
+        <DataCache>PriceCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XSPriceGroupMatch>
+
+      <!-- Perform main rating -->
+      <XSRating>
+        <ClassName>Pixip.Rating</ClassName>
+        <DataCache>RateCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </XSRating>
+
+      <!-- roll up inpacts -->
+      <XSRateRounding>
+        <ClassName>Pixip.RateRounding</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSRateRounding>
+
+      <!-- take into account the original value before balances -->
+      <XSCalculateOriginalCharge>
+        <ClassName>Pixip.CalculateOriginalCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSCalculateOriginalCharge>
+
+      <!-- compare our value with the calculated original value -->
+      <XSCompareCharge>
+        <ClassName>Pixip.CompareCharge</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSCompareCharge>
+      
+      <!-- Dump Diagnostic Information -->
+      <XSDumpFirst>
+        <ClassName>OpenRate.process.Dump</ClassName>
+        <Active>True</Active>
+        <DumpType>All</DumpType>
+        <DumpFilePath>Data/Pixip</DumpFilePath>
+        <DumpFilePrefix>XMASS_Sms_</DumpFilePrefix>
+        <DumpFileSuffix>.dump</DumpFileSuffix>
+        <BatchSize>5000</BatchSize>
+      </XSDumpFirst>
+    </Process>
+
+    <!-- Output Adapters -->
+    <OutputAdapter>
+      <XSGoodOutAdapter>
+        <ClassName>Pixip.PixipDBOutputAdapter</ClassName>
+        <OutputName>GoodOutput</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <DataSource>mtn_poc_db</DataSource>
+        <ValidateStatement>select 1 from xmass_or_cdr_sms</ValidateStatement>
+        <InitStatement>select 1 from xmass_or_cdr_sms</InitStatement>
+        <RecordInsertStatement>call sp_UpsertXMASSSmsResult(?,?,?)</RecordInsertStatement>
+        <CommitStatement>update xmass_or_cdr_sms set OR_RATE_CONTROL=3 where OR_RATE_CONTROL=2</CommitStatement>
+        <RollbackStatement>update xmass_or_cdr_sms set OR_RATE_CONTROL=-1 where OR_RATE_CONTROL=2</RollbackStatement>
+      </XSGoodOutAdapter>
+    </OutputAdapter>
+  </XMASSSmsPipe>
 
   <Resource>
     <LogFactory>

@@ -672,7 +672,8 @@ public class PixipRecord extends RatingRecord {
         break;
       case SMS:
         Service = "SMS";
-        setRUMValue("EVT", callDuration);
+        setRUMValue("DUR", callDuration);
+        setRUMValue("EVT", 1);
         break;
     }
 
