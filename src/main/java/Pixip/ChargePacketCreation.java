@@ -95,7 +95,7 @@ public class ChargePacketCreation extends AbstractStubPlugIn {
 
       // Mark voice records so we do splitting on them, others without
       if (CurrentRecord.teleserviceCode == VOICE) {
-        tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING;
+        tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING;
       } else {
         tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_NO_CHECK;
       }
