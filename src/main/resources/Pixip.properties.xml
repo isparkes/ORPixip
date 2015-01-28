@@ -98,6 +98,12 @@
         <BatchSize>5000</BatchSize>
       </PPriceGroupMatch>
 
+      <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
+      <PPreRatingBalancehandling>
+        <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
+        <BatchSize>5000</BatchSize>
+      </PPreRatingBalancehandling>
+      
       <!-- Perform main rating -->
       <PRating>
         <ClassName>Pixip.Rating</ClassName>
@@ -224,6 +230,12 @@
         <BatchSize>5000</BatchSize>
       </XCPriceGroupMatch>
 
+      <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
+      <XCPreRatingBalancehandling>
+        <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XCPreRatingBalancehandling>
+      
       <!-- Perform main rating -->
       <XCRating>
         <ClassName>Pixip.Rating</ClassName>
@@ -349,6 +361,12 @@
         <BatchSize>5000</BatchSize>
       </XFPriceGroupMatch>
 
+      <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
+      <XFPreRatingBalancehandling>
+        <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFPreRatingBalancehandling>
+      
       <!-- Perform main rating -->
       <XFRating>
         <ClassName>Pixip.Rating</ClassName>
@@ -474,6 +492,12 @@
         <BatchSize>5000</BatchSize>
       </XHPriceGroupMatch>
 
+      <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
+      <XHPreRatingBalancehandling>
+        <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHPreRatingBalancehandling>
+      
       <!-- Perform main rating -->
       <XHRating>
         <ClassName>Pixip.Rating</ClassName>
@@ -599,6 +623,12 @@
         <BatchSize>5000</BatchSize>
       </XSPriceGroupMatch>
 
+      <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
+      <XSPreRatingBalancehandling>
+        <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSPreRatingBalancehandling>
+      
       <!-- Perform main rating -->
       <XSRating>
         <ClassName>Pixip.Rating</ClassName>

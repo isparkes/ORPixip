@@ -51,98 +51,32 @@
 package Pixip;
 
 import OpenRate.process.AbstractStubPlugIn;
-import OpenRate.record.ChargePacket;
 import OpenRate.record.IRecord;
-import OpenRate.record.RatingBreakdown;
-import OpenRate.utils.ConversionUtils;
-import java.util.Iterator;
 
 /**
- * This module performs rounding and collection of output values.
+ * Handle balances before rating.
  *
  * @author ian
  */
-public class RateRounding extends AbstractStubPlugIn {
-  // -----------------------------------------------------------------------------
-  // ------------------ Start of inherited Plug In functions ---------------------
-  // -----------------------------------------------------------------------------
+public class PreRatingBalanceHandling extends AbstractStubPlugIn {
 
-  /**
-   * For all good records, this module enriches the CDR record with the
-   * information from the Accounting Info and Time Info records.
-   *
-   * @param r The record we are working on
-   * @return The processed record
-   */
   @Override
   public IRecord procValidRecord(IRecord r) {
-    double defaultTotalCost = 0;
-    double overlayTotalCost = 0;
-    boolean overlayUsed = false;
 
     PixipRecord CurrentRecord = (PixipRecord) r;
 
-    // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
-      // No custom rate so use the standard one
-      // pick out the connect cost part and create the steps serialisation
-      Iterator<ChargePacket> cpIter = CurrentRecord.getChargePackets().iterator();
-      while (cpIter.hasNext()) {
-        ChargePacket tmpCP = cpIter.next();
+      if (CurrentRecord.chargeDA1 == 70) {
+        double tmpCompareAmount = (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * -60;
 
-        // Gather from valid CPs with rating info
-        if ((tmpCP.breakDown != null) && (tmpCP.Valid)) {
-          // Standard Rating
-          if (tmpCP.packetType.equals("R")) {
-            Iterator<RatingBreakdown> rbIter = tmpCP.breakDown.iterator();
-            while (rbIter.hasNext()) {
-              RatingBreakdown rb = rbIter.next();
-
-              // Gather the steps
-              defaultTotalCost += rb.ratedAmount;
-            }
-          }
-
-          // overlay rating
-          if (tmpCP.packetType.equals("O")) {
-            // mark that we should use the overlay price
-            overlayUsed = true;
-
-            Iterator<RatingBreakdown> rbIter = tmpCP.breakDown.iterator();
-            while (rbIter.hasNext()) {
-              RatingBreakdown rb = rbIter.next();
-
-              // Gather the steps and total cost
-              overlayTotalCost += rb.ratedAmount;
-            }
-          }
-        }
+        // HACK: Reduce the RUm to rate by this amount
+        CurrentRecord.updateRUMValue("DUR", tmpCompareAmount);
       }
-
-      // now pick the right one
-      if (overlayUsed) {
-        CurrentRecord.ratedAmount = overlayTotalCost;
-      } else {
-        CurrentRecord.ratedAmount = defaultTotalCost;
-      }
-
-      // perform rounding, currently fixed VAT and use ConfCode to decide on fixed discount
-      double tmpAmount;
-      tmpAmount = CurrentRecord.ratedAmount;
-      CurrentRecord.ratedAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpAmount, 2);
     }
 
     return r;
   }
 
-  /**
-   * This is called when a data record with errors is encountered. You should do
-   * any processing here that you have to do for error records, e.g. statistics,
-   * special handling, even error correction!
-   *
-   * @param r The record we are working on
-   * @return The processed record
-   */
   @Override
   public IRecord procErrorRecord(IRecord r) {
     // do nothing

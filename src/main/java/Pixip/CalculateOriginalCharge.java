@@ -53,8 +53,8 @@ package Pixip;
 import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.IRecord;
 import OpenRate.utils.ConversionUtils;
-import static Pixip.TeleserviceCode.SMS;
-import static Pixip.TeleserviceCode.VOICE;
+import static Pixip.model.TeleserviceCode.SMS;
+import static Pixip.model.TeleserviceCode.VOICE;
 
 /**
  * Calculate what the original charge would have been, taking into account any
@@ -75,14 +75,21 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
 
       switch (CurrentRecord.teleserviceCode) {
         case VOICE:
-          if (CurrentRecord.chargeDA1 > 0) {
-            tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+          if ((CurrentRecord.chargeDA1 > 0) && (CurrentRecord.chargeDA1 != 70)) {
+            // VAT uplift for Post paid plans?
+            if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+            } else {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+            }
           }
           break;
         case SMS:
           if (CurrentRecord.chargeDA1 > 0) {
             // VAT uplift for Post paid plans?
             if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+            } else if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
               tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
             } else {
               tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
@@ -93,6 +100,8 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
           if (CurrentRecord.chargeDA1 > 0) {
             // VAT uplift for Post paid plans?
             if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
+              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+            } else if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
               tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
             } else {
               tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);

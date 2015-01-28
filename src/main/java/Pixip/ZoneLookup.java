@@ -52,7 +52,7 @@ import OpenRate.record.ChargePacket;
 import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
 import OpenRate.record.RecordError;
-import static Pixip.TeleserviceCode.GPRS;
+import static Pixip.model.TeleserviceCode.GPRS;
 import java.util.ArrayList;
 
 /**

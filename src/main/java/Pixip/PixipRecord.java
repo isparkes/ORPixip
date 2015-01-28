@@ -54,10 +54,12 @@
  */
 package Pixip;
 
+import Pixip.model.TeleserviceCode;
 import OpenRate.record.ErrorType;
 import OpenRate.record.RatingRecord;
 import OpenRate.record.RecordError;
-import static Pixip.TeleserviceCode.UNKNOWN;
+import static Pixip.model.TeleserviceCode.GPRS;
+import static Pixip.model.TeleserviceCode.UNKNOWN;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -550,8 +552,12 @@ public class PixipRecord extends RatingRecord {
     try {
       teleserviceCode = TeleserviceCode.fromValue(originalColumns[IDX_TELESERVICE_CODE]);
     } catch (NullPointerException | IllegalArgumentException ex) {
-      teleserviceCode = UNKNOWN;
-      addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
+      if (BNumber.equals("0")) {
+        teleserviceCode = GPRS;
+      } else {
+        teleserviceCode = UNKNOWN;
+        addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
+      }
     }
 
     // Traffic type might be relevant for rating
@@ -653,8 +659,13 @@ public class PixipRecord extends RatingRecord {
     try {
       teleserviceCode = TeleserviceCode.fromValue(originalColumns[XDX_TELESERVICE_CODE]);
     } catch (NullPointerException | IllegalArgumentException ex) {
-      teleserviceCode = UNKNOWN;
-      addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
+      // HACK: if we get an unknown TSC and the BNumber is "0", then we assume GPRS
+      if (BNumber.equals("0")) {
+        teleserviceCode = GPRS;
+      } else {
+        teleserviceCode = UNKNOWN;
+        addError(new RecordError("ERR_TS_CODE_INVALID", ErrorType.DATA_VALIDATION));
+      }
     }
 
     // Traffic type might be relevant for rating

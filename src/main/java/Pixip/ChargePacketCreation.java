@@ -54,7 +54,7 @@ import OpenRate.process.AbstractRUMTimeMatch;
 import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.ChargePacket;
 import OpenRate.record.IRecord;
-import static Pixip.TeleserviceCode.VOICE;
+import static Pixip.model.TeleserviceCode.VOICE;
 
 /**
  * This module creates the "seed" charge packet, which is used to drive the rest
