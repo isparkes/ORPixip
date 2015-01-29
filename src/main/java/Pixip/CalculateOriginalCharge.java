@@ -76,11 +76,15 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
       switch (CurrentRecord.teleserviceCode) {
         case VOICE:
           if (CurrentRecord.chargeDA1 > 0) {
-            // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+            if (CurrentRecord.chargeDA1 == 70) {
+              // 70 balances are applied before rating, we do not need to apply again after
             } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+              // VAT uplift for Post paid plans?
+              if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
+                tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
+              } else {
+                tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
+              }
             }
           }
           break;
