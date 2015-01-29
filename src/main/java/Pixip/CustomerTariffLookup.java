@@ -54,6 +54,7 @@ import OpenRate.process.AbstractRegexMatch;
 import OpenRate.record.ErrorType;
 import OpenRate.record.IRecord;
 import OpenRate.record.RecordError;
+import java.util.ArrayList;
 
 /**
  * Lookup the customer tariff from the MSISDN.
@@ -70,7 +71,7 @@ public class CustomerTariffLookup
   public IRecord procValidRecord(IRecord r) {
     String RegexGroup;
     PixipRecord CurrentRecord;
-    String result;
+    ArrayList<String> result;
 
     CurrentRecord = (PixipRecord) r;
 
@@ -81,10 +82,11 @@ public class CustomerTariffLookup
 
       RegexGroup = "Default";
 
-      result = getRegexMatch(RegexGroup, tmpSearchParameters);
+      result = getRegexMatchWithChildData(RegexGroup, tmpSearchParameters);
 
       if (isValidRegexMatchResult(result)) {
-        CurrentRecord.usedProduct = result;
+        CurrentRecord.usedProduct = result.get(0);
+        CurrentRecord.expectedDA1 = Integer.parseInt(result.get(1));
       } else {
         RecordError tmpError = new RecordError("ERR_CUST_TARIFF_NOT_FOUND", ErrorType.SPECIAL);
         tmpError.setModuleName(getSymbolicName());

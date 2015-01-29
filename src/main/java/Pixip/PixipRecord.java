@@ -258,6 +258,7 @@ public class PixipRecord extends RatingRecord {
   public int chargeDA1;
   public double beforeDA1;
   public double afterDA1;
+  public int expectedDA1 = 0;       // The DA1 that we expect for this tariff - a workaround for the XMASS tables
 
   /**
    * Map a detail record from the file input source. We split up the record at

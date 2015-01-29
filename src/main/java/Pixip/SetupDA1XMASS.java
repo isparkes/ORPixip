@@ -52,17 +52,14 @@ package Pixip;
 
 import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.IRecord;
-import OpenRate.utils.ConversionUtils;
-import static Pixip.model.TeleserviceCode.SMS;
-import static Pixip.model.TeleserviceCode.VOICE;
 
 /**
- * Calculate what the original charge would have been, taking into account any
- * bundles.
+ * set up the DA field so that the normal processing can use it. Only for 
+ * XMASS tables.
  *
  * @author ian
  */
-public class CalculateOriginalCharge extends AbstractStubPlugIn {
+public class SetupDA1XMASS extends AbstractStubPlugIn {
 
   @Override
   public IRecord procValidRecord(IRecord r) {
@@ -71,60 +68,18 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
-      double tmpCompareAmount = CurrentRecord.origAmount;
 
-      switch (CurrentRecord.teleserviceCode) {
-        case VOICE:
-          if (CurrentRecord.chargeDA1 > 0) {
-            // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
-            }
-          }
-          break;
-        case SMS:
-          if (CurrentRecord.chargeDA1 > 0) {
-            // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
-            }
-          }
-          break;
-        case GPRS:
-          if (CurrentRecord.chargeDA1 > 0) {
-            // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
-            }
-          }
-          break;
+      if ((CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) != 0) {
+        CurrentRecord.chargeDA1 = CurrentRecord.expectedDA1;
       }
-
-      // Tariff based bonus/markup
-      if (CurrentRecord.usedProduct.equals("Pay As You Go Dynamic PSB")
-              && (CurrentRecord.teleserviceCode == VOICE)) {
-        tmpCompareAmount *= 1.05;
-      }
-
-      CurrentRecord.compareAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpCompareAmount, 2);
-
     }
 
     return r;
   }
 
   @Override
-  public IRecord procErrorRecord(IRecord r) {
+  public IRecord procErrorRecord(IRecord r
+  ) {
     // do nothing
     return r;
   }

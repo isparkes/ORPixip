@@ -249,6 +249,12 @@
         <BatchSize>5000</BatchSize>
       </XCRateRounding>
 
+      <!-- workaround for the XMASS tables -->
+      <XCSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XCSetupDA1XMASS>
+      
       <!-- take into account the original value before balances -->
       <XCCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -380,6 +386,12 @@
         <BatchSize>5000</BatchSize>
       </XFRateRounding>
 
+      <!-- workaround for the XMASS tables -->
+      <XFSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFSetupDA1XMASS>
+      
       <!-- take into account the original value before balances -->
       <XFCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -511,6 +523,12 @@
         <BatchSize>5000</BatchSize>
       </XHRateRounding>
 
+      <!-- workaround for the XMASS tables -->
+      <XHSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHSetupDA1XMASS>
+      
       <!-- take into account the original value before balances -->
       <XHCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -642,6 +660,12 @@
         <BatchSize>5000</BatchSize>
       </XSRateRounding>
 
+      <!-- workaround for the XMASS tables -->
+      <XSSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSSetupDA1XMASS>
+      
       <!-- take into account the original value before balances -->
       <XSCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -761,7 +785,7 @@
           <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
           <DataSourceType>DB</DataSourceType>
           <DataSource>mtn_poc_db</DataSource>
-          <SelectStatement>select 'Default',MSISDN,SERVICE_CLASS_PACKAGE from mtn_msisdn_plan</SelectStatement>
+          <SelectStatement>select 'Default',MSISDN,SERVICE_CLASS_PACKAGE,DA1_TYPE_ID from mtn_msisdn_plan</SelectStatement>
           <KeyFields>1</KeyFields>
         </CustomerTariffCache>
 
