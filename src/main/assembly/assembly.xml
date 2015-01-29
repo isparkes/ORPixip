@@ -90,7 +90,7 @@
       </includes>
     </fileSet>
     
-    <!-- Copy over the Configuration and set up files -->
+    <!-- Copy over the Configuration and set up files used in the installation -->
     <fileSet>
       <directory>ConfigData/Pixip</directory>
       <outputDirectory>ConfigData/Pixip</outputDirectory>
@@ -98,7 +98,7 @@
         <include>SP.sql</include>
         <include>SP_MTN_POC.sql</include>
         <include>Create_OR_Output_Tables.sql</include>
-        <include>Pixip-009.sql.gz</include>
+        <include>Pixip-010.sql.gz</include>
       </includes>
     </fileSet>
 
