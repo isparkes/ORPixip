@@ -106,7 +106,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
       }
     }
     rateInfo.append("#");
-    
+
     // ********************* for output without upsert *************************
 //    // Price
 //    tmpDataRecord.setOutputColumnDouble(0, tmpInRecord.ratedAmount);
@@ -119,15 +119,14 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     // ********************** for output with upsert ***************************
     // RadacctID (Primary key)
     tmpDataRecord.setOutputColumnString(0, tmpInRecord.recordId);
-    
+
     // Price
     tmpDataRecord.setOutputColumnDouble(1, tmpInRecord.ratedAmount);
-    
+
     // Message
     tmpDataRecord.setOutputColumnString(2, rateInfo.toString());
 
     // *************************************************************************
-    
     Outbatch.add((IRecord) tmpDataRecord);
 
     return Outbatch;
@@ -150,6 +149,20 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     tmpDataRecord = new DBRecord();
     tmpDataRecord.setOutputColumnCount(3);
 
+    StringBuilder rateInfo = new StringBuilder("");
+    if (tmpInRecord.getErrors().get(0).getMessage().equals("ERR_COMPARISON_FAIL")) {
+      // Rate information, add all Charge Packets Info in one string seperated by #
+      for (ChargePacket cp : tmpInRecord.getChargePackets()) {
+        rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult).append(",");
+        for (TimePacket tp : cp.getTimeZones()) {
+          rateInfo.append(tp.TimeResult).append(",").append(tp.priceGroup).append(",");
+        }
+      }
+      rateInfo.append("#DIFF");
+    } else {
+      rateInfo.append(tmpInRecord.getErrors().get(0).getMessage());
+    }
+
     // ********************* for output without upsert *************************
 //    // Price
 //    tmpDataRecord.setOutputColumnDouble(0, tmpInRecord.ratedAmount);
@@ -162,15 +175,14 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     // ********************** for output with upsert ***************************
     // RadacctID (Primary key)
     tmpDataRecord.setOutputColumnString(0, tmpInRecord.recordId);
-    
+
     // Price
     tmpDataRecord.setOutputColumnDouble(1, tmpInRecord.ratedAmount);
-    
+
     // Message
-    tmpDataRecord.setOutputColumnString(2, tmpInRecord.getErrors().get(0).getMessage());
+    tmpDataRecord.setOutputColumnString(2, rateInfo.toString());
 
     // *************************************************************************
-    
     Outbatch.add((IRecord) tmpDataRecord);
 
     return Outbatch;

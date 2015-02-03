@@ -230,6 +230,12 @@
         <BatchSize>5000</BatchSize>
       </XCPriceGroupMatch>
 
+      <!-- workaround for the XMASS tables -->
+      <XCSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XCSetupDA1XMASS>
+      
       <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
       <XCPreRatingBalancehandling>
         <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
@@ -249,12 +255,6 @@
         <BatchSize>5000</BatchSize>
       </XCRateRounding>
 
-      <!-- workaround for the XMASS tables -->
-      <XCSetupDA1XMASS>
-        <ClassName>Pixip.SetupDA1XMASS</ClassName>
-        <BatchSize>5000</BatchSize>
-      </XCSetupDA1XMASS>
-      
       <!-- take into account the original value before balances -->
       <XCCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -367,6 +367,12 @@
         <BatchSize>5000</BatchSize>
       </XFPriceGroupMatch>
 
+      <!-- workaround for the XMASS tables -->
+      <XFSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFSetupDA1XMASS>
+      
       <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
       <XFPreRatingBalancehandling>
         <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
@@ -386,12 +392,6 @@
         <BatchSize>5000</BatchSize>
       </XFRateRounding>
 
-      <!-- workaround for the XMASS tables -->
-      <XFSetupDA1XMASS>
-        <ClassName>Pixip.SetupDA1XMASS</ClassName>
-        <BatchSize>5000</BatchSize>
-      </XFSetupDA1XMASS>
-      
       <!-- take into account the original value before balances -->
       <XFCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -504,6 +504,12 @@
         <BatchSize>5000</BatchSize>
       </XHPriceGroupMatch>
 
+      <!-- workaround for the XMASS tables -->
+      <XHSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHSetupDA1XMASS>
+      
       <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
       <XHPreRatingBalancehandling>
         <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
@@ -523,12 +529,6 @@
         <BatchSize>5000</BatchSize>
       </XHRateRounding>
 
-      <!-- workaround for the XMASS tables -->
-      <XHSetupDA1XMASS>
-        <ClassName>Pixip.SetupDA1XMASS</ClassName>
-        <BatchSize>5000</BatchSize>
-      </XHSetupDA1XMASS>
-      
       <!-- take into account the original value before balances -->
       <XHCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
@@ -641,6 +641,12 @@
         <BatchSize>5000</BatchSize>
       </XSPriceGroupMatch>
 
+      <!-- workaround for the XMASS tables -->
+      <XSSetupDA1XMASS>
+        <ClassName>Pixip.SetupDA1XMASS</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSSetupDA1XMASS>
+      
       <!-- Reduce rateable amount for DISTRIBUTOR PACKAGE, balance 70 -->
       <XSPreRatingBalancehandling>
         <ClassName>Pixip.PreRatingBalanceHandling</ClassName>
@@ -660,12 +666,6 @@
         <BatchSize>5000</BatchSize>
       </XSRateRounding>
 
-      <!-- workaround for the XMASS tables -->
-      <XSSetupDA1XMASS>
-        <ClassName>Pixip.SetupDA1XMASS</ClassName>
-        <BatchSize>5000</BatchSize>
-      </XSSetupDA1XMASS>
-      
       <!-- take into account the original value before balances -->
       <XSCalculateOriginalCharge>
         <ClassName>Pixip.CalculateOriginalCharge</ClassName>
