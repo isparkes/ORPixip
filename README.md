@@ -1,7 +1,7 @@
 ORPixip
 =======
 
-<br><br>Read this file with a text editor!!!<br><br>
+<br><br>You might find this file easier to read in a text editor!!!<br><br>
 
 Pixip Proof Of Concept.
 

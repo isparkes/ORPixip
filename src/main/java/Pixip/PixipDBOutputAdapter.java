@@ -102,7 +102,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     for (ChargePacket cp : tmpInRecord.getChargePackets()) {
       rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult).append(",");
       for (TimePacket tp : cp.getTimeZones()) {
-        rateInfo.append(tp.TimeResult).append(",").append(tp.priceGroup).append(",");
+        rateInfo.append(tp.timeResult).append(",").append(tp.priceGroup).append(",");
       }
     }
     rateInfo.append("#");
@@ -155,7 +155,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
       for (ChargePacket cp : tmpInRecord.getChargePackets()) {
         rateInfo.append(cp.ratePlanName).append(",").append(cp.zoneResult).append(",");
         for (TimePacket tp : cp.getTimeZones()) {
-          rateInfo.append(tp.TimeResult).append(",").append(tp.priceGroup).append(",");
+          rateInfo.append(tp.timeResult).append(",").append(tp.priceGroup).append(",");
         }
       }
       rateInfo.append("#DIFF");
