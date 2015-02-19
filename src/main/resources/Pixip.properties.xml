@@ -111,11 +111,17 @@
         <BatchSize>5000</BatchSize>
       </PRating>
 
-      <!-- roll up inpacts -->
+      <!-- roll up impacts -->
       <PRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
       </PRateRounding>
+
+      <!-- VAT Handling : dropdown  for postpaid -->
+      <PVATHandling>
+        <ClassName>Pixip.PostPaidVATDropDown</ClassName>
+        <BatchSize>5000</BatchSize>
+      </PVATHandling>
 
       <!-- take into account the original value before balances -->
       <PCalculateOriginalCharge>
@@ -249,11 +255,17 @@
         <BatchSize>5000</BatchSize>
       </XCRating>
 
-      <!-- roll up inpacts -->
+      <!-- roll up impacts -->
       <XCRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
       </XCRateRounding>
+
+      <!-- VAT Handling : dropdown  for postpaid -->
+      <XCVATHandling>
+        <ClassName>Pixip.PostPaidVATDropDown</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XCVATHandling>
 
       <!-- take into account the original value before balances -->
       <XCCalculateOriginalCharge>
@@ -386,11 +398,17 @@
         <BatchSize>5000</BatchSize>
       </XFRating>
 
-      <!-- roll up inpacts -->
+      <!-- roll up impacts -->
       <XFRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
       </XFRateRounding>
+
+      <!-- VAT Handling : dropdown  for postpaid -->
+      <XFVATHandling>
+        <ClassName>Pixip.PostPaidVATDropDown</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XFVATHandling>
 
       <!-- take into account the original value before balances -->
       <XFCalculateOriginalCharge>
@@ -523,11 +541,17 @@
         <BatchSize>5000</BatchSize>
       </XHRating>
 
-      <!-- roll up inpacts -->
+      <!-- roll up impacts -->
       <XHRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
       </XHRateRounding>
+
+      <!-- VAT Handling : dropdown  for postpaid -->
+      <XHVATHandling>
+        <ClassName>Pixip.PostPaidVATDropDown</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XHVATHandling>
 
       <!-- take into account the original value before balances -->
       <XHCalculateOriginalCharge>
@@ -660,11 +684,17 @@
         <BatchSize>5000</BatchSize>
       </XSRating>
 
-      <!-- roll up inpacts -->
+      <!-- roll up impacts -->
       <XSRateRounding>
         <ClassName>Pixip.RateRounding</ClassName>
         <BatchSize>5000</BatchSize>
       </XSRateRounding>
+
+      <!-- VAT Handling : dropdown  for postpaid -->
+      <XSVATHandling>
+        <ClassName>Pixip.PostPaidVATDropDown</ClassName>
+        <BatchSize>5000</BatchSize>
+      </XSVATHandling>
 
       <!-- take into account the original value before balances -->
       <XSCalculateOriginalCharge>

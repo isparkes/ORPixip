@@ -655,6 +655,7 @@ public class PixipRecord extends RatingRecord {
 //      fnf = true;
 //    }
 //    serviceClass = originalColumns[IDX_SERVICE_CLASS];
+    
     // Handle teleservice code
     // TODO: Find out what null TeleserviceCode means
     try {

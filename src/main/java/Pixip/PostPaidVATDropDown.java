@@ -53,16 +53,16 @@ package Pixip;
 import OpenRate.process.AbstractStubPlugIn;
 import OpenRate.record.IRecord;
 import OpenRate.utils.ConversionUtils;
-import static Pixip.model.TeleserviceCode.SMS;
 import static Pixip.model.TeleserviceCode.VOICE;
 
 /**
- * Calculate what the original charge would have been, taking into account any
- * bundles.
+ * This module removes VAT content from PostPaid CDRs.
+ *
+ *
  *
  * @author ian
  */
-public class CalculateOriginalCharge extends AbstractStubPlugIn {
+public class PostPaidVATDropDown extends AbstractStubPlugIn {
 
   @Override
   public IRecord procValidRecord(IRecord r) {
@@ -71,48 +71,19 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
-      double tmpCompareAmount = CurrentRecord.origAmount;
 
       switch (CurrentRecord.teleserviceCode) {
         case VOICE:
-          if (CurrentRecord.chargeDA1 > 0) {
-            if (CurrentRecord.chargeDA1 == 70) {
-              // 70 balances are applied before rating, we do not need to apply again after
-            } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
-            }
-          }
-          break;
         case SMS:
-          if (CurrentRecord.chargeDA1 > 0) {
-            // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
-            }
-          }
-          break;
         case GPRS:
-          if (CurrentRecord.chargeDA1 > 0) {
-            // VAT uplift for Post paid plans?
-            if (CurrentRecord.usedProduct.matches("ANYTIME.*")) {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1) * 1.14;
-            } else {
-              tmpCompareAmount += (CurrentRecord.beforeDA1 - CurrentRecord.afterDA1);
-            }
+          // VAT dropdown for Post paid plans
+          if (CurrentRecord.usedProduct.matches("CONNECTA.*")) {
+            CurrentRecord.ratedAmount = dropDownVAT(CurrentRecord.ratedAmount);
+          } else if (CurrentRecord.usedProduct.matches("DISTRIBUTOR.*")) {
+            CurrentRecord.ratedAmount = dropDownVAT(CurrentRecord.ratedAmount);
           }
           break;
       }
-
-      // Tariff based bonus/markup
-      if (CurrentRecord.usedProduct.equals("Pay As You Go Dynamic PSB")
-              && (CurrentRecord.teleserviceCode == VOICE)) {
-        tmpCompareAmount *= 1.05;
-      }
-
-      CurrentRecord.compareAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpCompareAmount, 2);
-
     }
 
     return r;
@@ -122,5 +93,18 @@ public class CalculateOriginalCharge extends AbstractStubPlugIn {
   public IRecord procErrorRecord(IRecord r) {
     // do nothing
     return r;
+  }
+
+  /**
+   * Drop down VAT for the given input amount.
+   * 
+   * @param ratedAmount
+   * @return 
+   */
+  public double dropDownVAT(double ratedAmount) {
+    double tmpAmount = ratedAmount * 100 / 114;
+
+    // perform rounding, currently fixed VAT and use ConfCode to decide on fixed discount
+    return ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpAmount, 2);
   }
 }
