@@ -128,8 +128,23 @@ public class RateRounding extends AbstractStubPlugIn {
 
       // perform rounding, currently fixed VAT and use ConfCode to decide on fixed discount
       double tmpAmount;
-      tmpAmount = CurrentRecord.ratedAmount;
-      CurrentRecord.ratedAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpAmount, 2);
+      switch (CurrentRecord.teleserviceCode) {
+        case VOICE:
+        case SMS:
+          tmpAmount = CurrentRecord.ratedAmount;
+          CurrentRecord.ratedAmount = ConversionUtils.getConversionUtilsObject().getRoundedValue(tmpAmount, 2);
+          break;
+        case GPRS:
+          // Data is rounded up
+          tmpAmount = CurrentRecord.ratedAmount;
+          CurrentRecord.ratedAmount = ConversionUtils.getConversionUtilsObject().getRoundedValueRoundUp(tmpAmount, 2);
+          
+          // Minimum charge rule
+          if (CurrentRecord.ratedAmount < 0.01) {
+            CurrentRecord.ratedAmount = 0.01;
+          }
+          break;
+      }
     }
 
     return r;
