@@ -75,7 +75,7 @@ public class PriceLookup extends AbstractRegexMatch {
 
     // We only transform the detail records, and leave the others alone
     if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
-        tmpSearchParameters[0] = CurrentRecord.Service; 
+        tmpSearchParameters[0] = CurrentRecord.service; 
         tmpSearchParameters[1] = CurrentRecord.origZone; 
         tmpSearchParameters[2] = CurrentRecord.destZone;
         

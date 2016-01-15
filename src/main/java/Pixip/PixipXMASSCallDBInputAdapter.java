@@ -52,6 +52,7 @@ package Pixip;
 
 import OpenRate.adapter.jdbc.JDBCInputAdapter;
 import OpenRate.record.DBRecord;
+import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
 
@@ -79,7 +80,7 @@ public class PixipXMASSCallDBInputAdapter extends JDBCInputAdapter {
    * @return
    */
   @Override
-  public IRecord procHeader(IRecord r) {
+  public HeaderRecord procHeader(HeaderRecord r) {
     StreamRecordNumber = 0;
     return r;
   }
@@ -99,17 +100,16 @@ public class PixipXMASSCallDBInputAdapter extends JDBCInputAdapter {
    * @return
    */
   @Override
-  public IRecord procValidRecord(IRecord r) {
+  public IRecord procValidRecord(DBRecord r) {
 
-    DBRecord originalRecord = (DBRecord) r;
     tmpDataRecord = new PixipRecord();
 
     // map the data to the working fields
-    tmpDataRecord.mapXMASSCallDBDetailRecord(originalRecord.getOriginalColumns());
+    tmpDataRecord.mapXMASSCallDBDetailRecord(r.getOriginalColumns());
 
     // Return the created record
     StreamRecordNumber++;
-    tmpDataRecord.RecordNumber = StreamRecordNumber;
+    tmpDataRecord.recordNumber = StreamRecordNumber;
 
     return tmpDataRecord;
 
@@ -125,7 +125,7 @@ public class PixipXMASSCallDBInputAdapter extends JDBCInputAdapter {
    * @return
    */
   @Override
-  public IRecord procErrorRecord(IRecord r) {
+  public IRecord procErrorRecord(DBRecord r) {
     return r;
   }
 
@@ -137,13 +137,13 @@ public class PixipXMASSCallDBInputAdapter extends JDBCInputAdapter {
    * @return
    */
   @Override
-  public IRecord procTrailer(IRecord r) {
+  public TrailerRecord procTrailer(TrailerRecord r) {
     TrailerRecord tmpTrailer;
 
     // set the trailer record count
-    tmpTrailer = (TrailerRecord) r;
+    tmpTrailer = r;
     tmpTrailer.setRecordCount(StreamRecordNumber);
 
-    return (IRecord) tmpTrailer;
+    return tmpTrailer;
   }
 }

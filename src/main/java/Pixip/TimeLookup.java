@@ -74,13 +74,13 @@ public class TimeLookup extends AbstractRUMTimeMatch {
     if (CurrentRecord.RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       
       // Populate the end date - needed for time splitting
-      CurrentRecord.EventEndDate = conversionUtils.addDateSeconds(CurrentRecord.EventStartDate, CurrentRecord.callDuration);
+      CurrentRecord.eventEndDate = conversionUtils.addDateSeconds(CurrentRecord.eventStartDate, CurrentRecord.callDuration);
 
       try {
         performRUMTimeMatch(CurrentRecord);
       } catch (ProcessingException pe) {
         tmpError = new RecordError("TimeZone Value Not Found for TimeModel=" + CurrentRecord.getChargePacket(0).timeModel
-                + " EventStartDate=" + CurrentRecord.EventStartDate, ErrorType.DATA_NOT_FOUND, this.getSymbolicName());
+                + " EventStartDate=" + CurrentRecord.eventStartDate, ErrorType.DATA_NOT_FOUND, this.getSymbolicName());
         CurrentRecord.addError(tmpError);
       }
     }

@@ -56,7 +56,9 @@ package Pixip;
 
 import OpenRate.adapter.file.FlatFileInputAdapter;
 import OpenRate.record.FlatRecord;
+import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.record.TrailerRecord;
 
 /**
  * Instance of the input adapter for the Ventelo traffic type.
@@ -66,13 +68,6 @@ import OpenRate.record.IRecord;
 public class PixipFileInputAdapter extends FlatFileInputAdapter {
 
   private int IntRecordNumber;
-
-  /**
-   * Constructor for CustomizeInputAdapter.
-   */
-  public PixipFileInputAdapter() {
-    super();
-  }
 
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
@@ -84,7 +79,7 @@ public class PixipFileInputAdapter extends FlatFileInputAdapter {
    * @return
    */
   @Override
-  public IRecord procHeader(IRecord r) {
+  public HeaderRecord procHeader(HeaderRecord r) {
     IntRecordNumber = 0;
 
     return r;
@@ -105,7 +100,7 @@ public class PixipFileInputAdapter extends FlatFileInputAdapter {
    * @return
    */
   @Override
-  public IRecord procValidRecord(IRecord r) {
+  public IRecord procValidRecord(FlatRecord r) {
     PixipRecord tmpDataRecord;
     FlatRecord tmpFlatRecord;
 
@@ -123,7 +118,7 @@ public class PixipFileInputAdapter extends FlatFileInputAdapter {
     // Normal detail record
     tmpDataRecord.mapFileDetailRecord(tmpFlatRecord.getData());
     IntRecordNumber++;
-    tmpDataRecord.RecordNumber = IntRecordNumber;
+    tmpDataRecord.recordNumber = IntRecordNumber;
 
     // Return the modified record in the Common record format (IRecord)
     return (IRecord) tmpDataRecord;
@@ -139,7 +134,7 @@ public class PixipFileInputAdapter extends FlatFileInputAdapter {
    * @return
    */
   @Override
-  public IRecord procErrorRecord(IRecord r) {
+  public IRecord procErrorRecord(FlatRecord r) {
     // The FlatFileInputAdapter is not able to create error records, so we
     // do not have to do anything for this
     return r;
@@ -153,7 +148,7 @@ public class PixipFileInputAdapter extends FlatFileInputAdapter {
    * @return
    */
   @Override
-  public IRecord procTrailer(IRecord r) {
+  public TrailerRecord procTrailer(TrailerRecord r) {
 
     return r;
   }

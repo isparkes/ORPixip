@@ -88,7 +88,7 @@ public class ChargePacketCreation extends AbstractStubPlugIn {
       tmpCP.zoneModel = "Default";                    // Default
       tmpCP.zoneResult = CurrentRecord.destination;   // Filled during zoning
       tmpCP.timeModel = CurrentRecord.usedProduct;    // To allow time zoning based on product - mapped in table TIME_MODEL_MAP to a time model
-      tmpCP.service = CurrentRecord.Service;          // From CDR type
+      tmpCP.service = CurrentRecord.service;          // From CDR type
       tmpCP.ratePlanName = CurrentRecord.usedProduct; // Filled during rate plan lookup
       tmpCP.subscriptionID = "";                      // We don't need a subscription
       tmpCP.priority = 0;                             // Base product - prio 0

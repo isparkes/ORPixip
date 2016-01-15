@@ -78,10 +78,10 @@ import java.util.ArrayList;
  * Generally, the record should know how to handle the following operations by
  * linking the appropriate method:
  *
- * mapOriginalData() [mandatory] ----------------- Transformation from a flat
+ * maporiginalData() [mandatory] ----------------- Transformation from a flat
  * record as read by the input adapter to a formatted record.
  *
- * unmapOriginalData() [mandatory if you wish to write output files]
+ * unmaporiginalData() [mandatory if you wish to write output files]
  * ------------------- Transformation from a formatted record to a flat record
  * ready for output.
  *
@@ -272,12 +272,12 @@ public class PixipRecord extends RatingRecord {
     RECORD_TYPE = PixipRecord.DETAIL_RECORD;
 
     // Set the original data
-    OriginalData = inputData;
+    originalData = inputData;
 
     // Detect recycle case
-    if (OriginalData.startsWith(RECYCLE_TAG)) {
+    if (originalData.startsWith(RECYCLE_TAG)) {
       // RECYCLE_COUNT
-      StringBuffer record = new StringBuffer(OriginalData);
+      StringBuffer record = new StringBuffer(originalData);
 
       // remove RecycleTag from record
       record = record.delete(0, record.indexOf(FILE_FIELD_SPLITTER) + 1);
@@ -293,11 +293,11 @@ public class PixipRecord extends RatingRecord {
       record = record.delete(0, record.indexOf(";") + 1);
 
       // reset the original data
-      OriginalData = record.toString();
+      originalData = record.toString();
     }
 
     // Split the fields up
-    fields = OriginalData.split(FILE_FIELD_SPLITTER);
+    fields = originalData.split(FILE_FIELD_SPLITTER);
 
     // Validate the number of fields
     if (fields.length == FIELD_BILLING_COUNT) {
@@ -335,8 +335,8 @@ public class PixipRecord extends RatingRecord {
       // Get the CDR start date
       try {
         SimpleDateFormat sdfInput = new SimpleDateFormat("yyyyMMddHHmmss");
-        EventStartDate = sdfInput.parse(eventDate);
-        UTCEventDate = EventStartDate.getTime() / 1000;
+        eventStartDate = sdfInput.parse(eventDate);
+        utcEventDate = eventStartDate.getTime() / 1000;
       } catch (ParseException ex) {
         addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
       }
@@ -346,7 +346,7 @@ public class PixipRecord extends RatingRecord {
       setRUMValue("MONEY", origAmount);
 
       // Set the default service
-      Service = "TEL";
+      service = "TEL";
     } else {
       addError(new RecordError("ERR_FIELD_COUNT", ErrorType.DATA_VALIDATION));
     }
@@ -359,7 +359,7 @@ public class PixipRecord extends RatingRecord {
    */
   public void mapUnknownRecord(String inputData) {
     // Just mark the record as unknown and store the input
-    OriginalData = inputData;
+    originalData = inputData;
     addError(new RecordError("ERR_UNKNOWN_RECORD", ErrorType.DATA_VALIDATION));
   }
 
@@ -369,7 +369,7 @@ public class PixipRecord extends RatingRecord {
    *
    * @return The unmapped original data
    */
-  public String unmapOriginalData() {
+  public String unmaporiginalData() {
     int NumberOfFields;
     int i;
     StringBuffer tmpReassemble;
@@ -398,7 +398,7 @@ public class PixipRecord extends RatingRecord {
       return tmpReassemble.toString();
     } else {
       // just return the untampered with original
-      return OriginalData;
+      return originalData;
     }
   }
 
@@ -433,12 +433,12 @@ public class PixipRecord extends RatingRecord {
       tmpReassemble.append(FILE_FIELD_SPLITTER);
 
       // Now the original record
-      tmpReassemble.append(OriginalData);
+      tmpReassemble.append(originalData);
 
       return tmpReassemble.toString();
     } else {
       // just return the untampered with original
-      return OriginalData;
+      return originalData;
     }
   }
 
@@ -457,12 +457,12 @@ public class PixipRecord extends RatingRecord {
     // We only transform the detail records, and leave the others alone
     if (RECORD_TYPE == PixipRecord.DETAIL_RECORD) {
       tmpDumpList.add("============ BEGIN RECORD ============");
-      tmpDumpList.add("  Record Number         = <" + RecordNumber + ">");
+      tmpDumpList.add("  Record Number         = <" + recordNumber + ">");
       tmpDumpList.add("  Pixip Record Id       = <" + recordId + ">");
       tmpDumpList.add("  Outputs               = <" + outputs + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  Call Start Date       = <" + EventStartDate + ">");
-      tmpDumpList.add("  Call End Date         = <" + EventEndDate + ">");
+      tmpDumpList.add("  Call Start Date       = <" + eventStartDate + ">");
+      tmpDumpList.add("  Call End Date         = <" + eventEndDate + ">");
       tmpDumpList.add("  Call Duration         = <" + callDuration + ">");
       tmpDumpList.add("  ANumber               = <" + ANumber + ">");
       tmpDumpList.add("  BNumber               = <" + BNumber + ">");
@@ -470,8 +470,8 @@ public class PixipRecord extends RatingRecord {
 //      tmpDumpList.add("  CallType              = <" + callType + ">");
 //      tmpDumpList.add("  PartnerOperator       = <" + partnerOperator + ">");
 //      tmpDumpList.add("  FnF                   = <" + fnf + ">");
-//      tmpDumpList.add("  ServiceClass          = <" + serviceClass + ">");
-      tmpDumpList.add("  TeleServiceCode       = <" + teleserviceCode + ">");
+//      tmpDumpList.add("  serviceClass          = <" + serviceClass + ">");
+      tmpDumpList.add("  TeleserviceCode       = <" + teleserviceCode + ">");
       tmpDumpList.add("  TrafficType           = <" + trafficType + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  BNumberNormalised     = <" + BNumberNorm + ">");
@@ -482,7 +482,7 @@ public class PixipRecord extends RatingRecord {
       tmpDumpList.add("  Before DA1            = <" + beforeDA1 + ">");
       tmpDumpList.add("  After  DA1            = <" + afterDA1 + ">");
       tmpDumpList.add("--------------------------------------");
-      tmpDumpList.add("  CDRDate               = <" + EventStartDate + ">");
+      tmpDumpList.add("  CDRDate               = <" + eventStartDate + ">");
       tmpDumpList.add("  BNumber Norm          = <" + BNumberNorm + ">");
       tmpDumpList.add("  Destination           = <" + destination + ">");
       tmpDumpList.add("  Destination Category  = <" + destCategory + ">");
@@ -522,8 +522,8 @@ public class PixipRecord extends RatingRecord {
     try {
       // Convert date from string: 2014-12-02 16:42:21
       SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-      EventStartDate = sdfInput.parse(eventDate);
-      UTCEventDate = EventStartDate.getTime() / 1000;
+      eventStartDate = sdfInput.parse(eventDate);
+      utcEventDate = eventStartDate.getTime() / 1000;
     } catch (ParseException ex) {
       addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
     }
@@ -567,15 +567,15 @@ public class PixipRecord extends RatingRecord {
     // Set the RUMS duration/volume and original rated amount (for markup)
     switch (teleserviceCode) {
       case VOICE:
-        Service = "VOICE";
+        service = "VOICE";
         setRUMValue("DUR", callDuration);
         break;
       case GPRS:
-        Service = "GPRS";
+        service = "GPRS";
         setRUMValue("VOL", callDuration);
         break;
       case SMS:
-        Service = "SMS";
+        service = "SMS";
         setRUMValue("EVT", callDuration);
         break;
     }
@@ -628,8 +628,8 @@ public class PixipRecord extends RatingRecord {
     try {
       // Convert date from string: 2014-12-02 16:42:21
       SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-      EventStartDate = sdfInput.parse(eventDate);
-      UTCEventDate = EventStartDate.getTime() / 1000;
+      eventStartDate = sdfInput.parse(eventDate);
+      utcEventDate = eventStartDate.getTime() / 1000;
     } catch (ParseException ex) {
       addError(new RecordError("ERR_DATE_INVALID", ErrorType.DATA_VALIDATION));
     }
@@ -676,15 +676,15 @@ public class PixipRecord extends RatingRecord {
     // Set the RUMS duration/volume and original rated amount (for markup)
     switch (teleserviceCode) {
       case VOICE:
-        Service = "VOICE";
+        service = "VOICE";
         setRUMValue("DUR", callDuration);
         break;
       case GPRS:
-        Service = "GPRS";
+        service = "GPRS";
         setRUMValue("VOL", callDuration);
         break;
       case SMS:
-        Service = "SMS";
+        service = "SMS";
         setRUMValue("DUR", callDuration);
         setRUMValue("EVT", 1);
         break;

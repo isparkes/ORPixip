@@ -65,13 +65,6 @@ import java.util.Collection;
 public class PixipDBOutputAdapter extends JDBCOutputAdapter {
 
   /**
-   * Creates a new instance of DBOutput
-   */
-  public PixipDBOutputAdapter() {
-    super();
-  }
-
-  /**
    * We transform the records here so that they are ready to output making any
    * specific changes to the record that are necessary to make it ready for
    * output.
@@ -87,11 +80,11 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
    * @return
    */
   @Override
-  public Collection<IRecord> procValidRecord(IRecord r) {
+  public Collection<DBRecord> procValidRecord(IRecord r) {
 
     PixipRecord tmpInRecord;
     DBRecord tmpDataRecord;
-    Collection<IRecord> Outbatch;
+    Collection<DBRecord> Outbatch;
     Outbatch = new ArrayList<>();
     tmpInRecord = (PixipRecord) r;
     tmpDataRecord = new DBRecord();
@@ -127,7 +120,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     tmpDataRecord.setOutputColumnString(2, rateInfo.toString());
 
     // *************************************************************************
-    Outbatch.add((IRecord) tmpDataRecord);
+    Outbatch.add(tmpDataRecord);
 
     return Outbatch;
   }
@@ -140,10 +133,10 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
    * @return
    */
   @Override
-  public Collection<IRecord> procErrorRecord(IRecord r) {
+  public Collection<DBRecord> procErrorRecord(IRecord r) {
     PixipRecord tmpInRecord;
     DBRecord tmpDataRecord;
-    Collection<IRecord> Outbatch;
+    Collection<DBRecord> Outbatch;
     Outbatch = new ArrayList<>();
     tmpInRecord = (PixipRecord) r;
     tmpDataRecord = new DBRecord();
@@ -183,7 +176,7 @@ public class PixipDBOutputAdapter extends JDBCOutputAdapter {
     tmpDataRecord.setOutputColumnString(2, rateInfo.toString());
 
     // *************************************************************************
-    Outbatch.add((IRecord) tmpDataRecord);
+    Outbatch.add(tmpDataRecord);
 
     return Outbatch;
   }
