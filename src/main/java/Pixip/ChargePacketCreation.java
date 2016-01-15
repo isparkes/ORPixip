@@ -1,9 +1,13 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
- * The exclusive owner of this work is Tiger Shore Management Ltd.
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
+ * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright Tiger Shore Management Ltd 2006-2010.
+ * is Copyright of the OpenRate project 2006-2016.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -37,7 +41,7 @@
  * This software is provided "as is" and any expressed or impled warranties,
  * including, but not limited to, the impled warranties of merchantability
  * and fitness for a particular purpose are disclaimed. In no event shall
- * Tiger Shore Management or its officially assigned agents be liable to any
+ * The OpenRate Project or its officially assigned agents be liable to any
  * direct, indirect, incidental, special, exemplary, or consequential damages
  * (including but not limited to, procurement of substitute goods or services;
  * Loss of use, data, or profits; or any business interruption) however caused
