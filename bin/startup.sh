@@ -4,7 +4,7 @@ LIB_DIR=$OR_ROOT_DIR/lib
 OR_LIB_DIR=$OR_ROOT_DIR/ORlib
 APP_LIB_DIR=$OR_ROOT_DIR/dist
 PROPERTIES_DIR=$OR_ROOT_DIR/properties
-JDKPath=/opt/jdk1.7.0
+JDKPath=/opt/jdk1.8.0
 
 #Build classpath
 for libfile in $LIB_DIR/*.jar; do
