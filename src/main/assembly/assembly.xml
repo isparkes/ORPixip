@@ -60,7 +60,7 @@
       <outputDirectory>properties</outputDirectory>
       <includes>
         <include>Pixip.properties.xml</include>
-        <include>logPixip.properties</include>
+        <include>logPixip.xml</include>
         <include>log4j.dtd</include>
       </includes>
     </fileSet>
@@ -76,7 +76,7 @@
 
     <fileSet>
       <directory>src/main/resources</directory>
-      <outputDirectory>log</outputDirectory>
+      <outputDirectory>logs</outputDirectory>
       <includes>
         <include>Log-Readme.txt</include>
       </includes>
