@@ -740,7 +740,7 @@
   <Resource>
     <LogFactory>
       <ClassName>OpenRate.logging.LogFactory</ClassName>
-      <Properties>logPixip.properties</Properties>
+      <Properties>logPixip.xml</Properties>
       <DefaultCategory>ConfigTest</DefaultCategory>
     </LogFactory>
 
@@ -843,7 +843,7 @@
           <DataSourceType>DB</DataSourceType>
           <DataSource>PixipDB</DataSource>
           <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE from PRICE_MODEL</PriceModelStatement>
-          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,RESOURCE_ID,CONSUME_FLAG from RUM_MAP order by STEP</RUMMapStatement>
+          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,RESOURCE_ID from RUM_MAP order by STEP</RUMMapStatement>
         </RateCache>
 
       </CacheableClass>
