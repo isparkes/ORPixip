@@ -5,6 +5,7 @@ import OpenRate.record.DBRecord;
 import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
+import OpenRate.record.FlatRecord;
 
 /**
  * This is the input adapter reading the CDRs from a table instead of a file

@@ -769,7 +769,7 @@
       <DataSource>
         <mtn_poc_db>
           <db_url>jdbc:mysql://localhost/mtn_poc</db_url>
-          <driver>com.mysql.jdbc.Driver</driver>
+          <driver>com.mysql.cj.jdbc.Driver</driver>
           <username>openrate</username>
           <password>openrate</password>
           <ValidationQuery>select 1 from dual</ValidationQuery>
@@ -779,7 +779,7 @@
       
         <PixipDB>
           <db_url>jdbc:mysql://localhost/PixipDB</db_url>
-          <driver>com.mysql.jdbc.Driver</driver>
+          <driver>com.mysql.cj.jdbc.Driver</driver>
           <username>openrate</username>
           <password>openrate</password>
           <ValidationQuery>select 1 from dual</ValidationQuery>
