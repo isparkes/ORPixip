@@ -1,66 +1,90 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE log4j:configuration PUBLIC
-  "-//APACHE//DTD LOG4J 1.2//EN" 
-  "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logging configuration for the Pixip revenue assurance application.
 
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-  
-  <appenders>
-    <Console name="console">
-        <PatternLayout pattern="%m%n" />
+  OpenRate asks for loggers by name: "Framework", "ErrorLog" and "Statistics"
+  come from the framework itself, and each pipeline logs under its own name as
+  declared in Pixip.properties.xml.
+-->
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
     </Console>
 
-    <File name="rootlogger" fileName="logs/openrate.log">
-        <PatternLayout>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p %c{1}:%L - %m%n</pattern>
-        </PatternLayout>
-    </File>
-    
-    <File name="frameworklogfile" fileName="logs/Framework.log">
-        <PatternLayout>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p %c{1}:%L - %m%n</pattern>
-        </PatternLayout>
+    <File name="FrameworkAppender" fileName="log/PixipFramework.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
     </File>
 
-    <File name="pixippipelogfile" fileName="logs/PixipPipe.log">
-        <PatternLayout>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p %c{1}:%L - %m%n</pattern>
-        </PatternLayout>
+    <File name="ErrorAppender" fileName="log/Error.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
     </File>
 
-    <File name="errorlogfile" fileName="logs/Error.log">
-        <PatternLayout>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p %c{1}:%L - %m%n</pattern>
-        </PatternLayout>
+    <File name="StatisticsAppender" fileName="log/PixipStatistics.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
     </File>
-  </appenders>
 
-  <!-- *********************************************************************** -->  
-  <loggers>
-    <logger name="Error" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="errorlogfile" />
-    </logger>
-    
-    <logger name="Framework" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="frameworklogfile" />
-    </logger>
+    <File name="PixipPipeAppender" fileName="log/PixipPipe.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
+    </File>
 
-    <logger name="Pipeline.PixipPipe" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="pixippipelogfile" />
-    </logger>
+    <File name="XMASSAppender" fileName="log/XMASSPipes.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
+    </File>
+  </Appenders>
 
-    <!-- *********************************************************************** -->  
-    <logger name="ConsoleLogger">
-        <!-- Used by the application to dynamically add the console appender -->
-        <appender-ref ref="console" />
-    </logger>
+  <Loggers>
+    <Logger name="Framework" level="info" additivity="false">
+      <AppenderRef ref="FrameworkAppender"/>
+    </Logger>
 
-    <root>
-        <priority value="INFO" />
-        <appender-ref ref="rootlogger" />
-    </root>
-  </loggers>
-</log4j:configuration>
+    <Logger name="ErrorLog" level="debug" additivity="false">
+      <AppenderRef ref="ErrorAppender"/>
+    </Logger>
+
+    <Logger name="Statistics" level="info" additivity="false">
+      <AppenderRef ref="StatisticsAppender"/>
+    </Logger>
+
+    <Logger name="PixipPipe" level="info" additivity="false">
+      <AppenderRef ref="PixipPipeAppender"/>
+    </Logger>
+
+    <!-- The four probe pipelines share one log: they do the same work on
+         different record types, and reading them interleaved is easier than
+         following four files. -->
+    <Logger name="XMASSCallPipe" level="info" additivity="false">
+      <AppenderRef ref="XMASSAppender"/>
+    </Logger>
+
+    <Logger name="XMASSFtpPipe" level="info" additivity="false">
+      <AppenderRef ref="XMASSAppender"/>
+    </Logger>
+
+    <Logger name="XMASSHttpPipe" level="info" additivity="false">
+      <AppenderRef ref="XMASSAppender"/>
+    </Logger>
+
+    <Logger name="XMASSSmsPipe" level="info" additivity="false">
+      <AppenderRef ref="XMASSAppender"/>
+    </Logger>
+
+    <Logger name="Pixip" level="info" additivity="false">
+      <AppenderRef ref="FrameworkAppender"/>
+    </Logger>
+
+    <Root level="error">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>

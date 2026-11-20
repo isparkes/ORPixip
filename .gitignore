@@ -11,3 +11,6 @@ release.properties
 .factorypath
 .classpath
 
+# Per-record processing dumps written by the Dump module at runtime
+/Data/Pixip/*.dump
+/log/*.log

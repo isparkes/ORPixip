@@ -1,156 +1,289 @@
 ORPixip
 =======
 
-<br><br>You might find this file easier to read in a text editor!!!<br><br>
+Revenue assurance for a mobile operator, built on
+[OpenRate](https://github.com/isparkes/OpenRate). It rates the operator's
+traffic a second time, independently of the billing system, and reports every
+record where the two answers disagree.
 
-Pixip Proof Of Concept.
+Five sources are rated in parallel: the billing system's own call records, and
+four streams of probe records (call, SMS, FTP, HTTP) captured on the network.
+Each rated record is written back next to the original, with the charge
+OpenRate arrived at and the trail it followed to get there, so the two can be
+compared.
 
-This project is a proof of concept for rating for revenue assurance purposes.
-It takes 5 sources of information and applies rating to them:
- - An input billing table (mtn_poc.mtn_billing_cdr), taken from the billing system and rated according to the values in the table. Results are placed in a dedicated output table (mtn_poc. or_billing_result), joined to the input table on mtn_cdr_id
- - An input table for probe call records (mtn_poc.mxass_or_cdr_call), rated to an output table (mtn_poc.or_xmass_call_result), joined on RESULT_ID
- - An input table for probe SMS records (mtn_poc.mxass_or_cdr_sms), rated to an output table (mtn_poc.or_xmass_sms_result), joined on RESULT_ID
- - An input table for probe FTP records (mtn_poc.mxass_or_cdr_ftp), rated to an output table (mtn_poc.or_xmass_ftp_result), joined on RESULT_ID
- - An input table for probe HTTP records (mtn_poc.mxass_or_cdr_http), rated to an output table (mtn_poc.or_xmass_http_result), joined on RESULT_ID
+This is a decommissioned proof of concept for an African mobile operator, with
+its real reference data and a sample of its real traffic. It is the
+database-in, database-out counterpart to
+[OpenRateWeblinksInterconnect](https://github.com/isparkes/OpenRateWeblinksInterconnect):
+no files anywhere, five pipelines instead of two.
 
-The output tables are loaded by a stored procedure, which implements a simple "upsert" (insert if not present, update if already present) procedure.
+Requires OpenRate 1.5.2.6 or later, JDK 17, and Docker (for the database, see
+below).
 
-Records are taken for rating if a key field in the input table has an expected value:
- - For input table mtn_billing_cdr, records are taken in FIELD3 is null
- - For input tables mxass_or_cdr_call, mxass_or_cdr_sms, mxass_or_cdr_ftp and mxass_or_cdr_http records are taken if OR_RATE_CONTROL is 0
+Quick start
+-----------
 
-Pre-requesites:
-  MySQL Installed and running
-  Dump files have been uncompressed
-  Maven is installed
+```bash
+./demo.sh
+```
 
+That brings up MySQL, loads both schemas, builds the application, starts the
+framework, rates all 4779 records, shows what it found, and shuts down again.
+It takes about two minutes.
 
-To set up this project:
+If OpenRate itself is not installed yet, `demo.sh` stops and tells you how.
+OpenRate is not published to Maven Central, so the framework has to be built
+locally first — once, before any application will resolve it:
 
-Configuration Database:
-=======================
+```bash
+git clone https://github.com/isparkes/OpenRate.git
+cd OpenRate
+./bootstrap.sh
+```
 
-The system uses two databases: 
+What it finds
+-------------
 
- - A configuration database "PixipDB" which holds the static reference data for rating.
- - A database for holding the input 
+```
++------------+---------+-------+---------+-------------+
+| SOURCE     | RECORDS | RATED | DIFFERS | RATED_VALUE |
++------------+---------+-------+---------+-------------+
+| billing    |    1311 |  1311 |       3 |     1574.44 |
+| probe call |    1021 |  1021 |      78 |      673.69 |
+| probe sms  |      94 |    94 |       4 |      120.31 |
+| probe ftp  |      11 |    11 |       0 |        0.29 |
+| probe http |    2342 |  2342 |      22 |      134.52 |
++------------+---------+-------+---------+-------------+
+```
 
-mysqladmin --user=root --password=cpr create PixipDB
+`DIFFERS` is the point of the exercise. A record counts as differing when
+OpenRate's charge is more than 8 cents away from the billing system's on a
+voice call, or 5 cents on anything else — the tolerances are in
+`CompareCharge.java`. Those records are written with `#DIFF` on the end of
+their rating trail, and `./db.sh status` lists the billing ones:
 
-mysql --user=root --password=cpr
+```
++------+---------+---------+--------+----------+---------------------------------------------+
+| CDR  | SERVICE | SECONDS | BILLED | OPENRATE | RATING_TRAIL                                |
++------+---------+---------+--------+----------+---------------------------------------------+
+| 1307 | VOICE   |      64 |   2.25 |     1.95 | PMB,NAL,OFFPEAK,PM_1_5,PMB,NAL,VALUE,PM_0_9 |
+| 1323 | VOICE   |      64 |   1.65 |      1.8 | PMB,NAL,VALUE,PM_0_9,PMB,NAL,PEAK,PM_1_8    |
+| 1352 | VOICE   |      64 |   2.25 |     1.95 | PMB,NAL,OFFPEAK,PM_1_5,PMB,NAL,VALUE,PM_0_9 |
++------+---------+---------+--------+----------+---------------------------------------------+
+```
 
-mysql> create user 'openrate'@'localhost' identified by 'openrate';
+All three are 64 second calls that crossed a time band boundary, so they were
+split into two charge packets and rated partly at one price and partly at
+another. The billing system handled the split differently. That is exactly the
+kind of thing this application exists to surface.
 
-mysql> grant all privileges on PixipDB.* to 'openrate'@'localhost';
+The database
+------------
 
-mysql> grant execute on *.* to 'openrate'@'localhost';
+Two schemas on one MySQL server:
 
-mysql> grant create routine on PixipDB.* to 'openrate'@'localhost';
+| Schema | Holds |
+|---|---|
+| `PixipDB` | The rating reference data — normalisation rules, destinations, time models, price models |
+| `mtn_poc` | The operator's own data — the records to rate, and the result tables |
 
-mysql> exit
+`db.sh` runs MySQL in a Docker container on port **3307** and loads both, so
+there is nothing to install beyond Docker. Port 3307 rather than 3306 so it
+does not collide with a MySQL of your own, or with the other OpenRate
+examples.
 
-Then load the data
+| Command | Does |
+|---|---|
+| `./db.sh` | Start MySQL and load both schemas |
+| `./db.sh status` | Say whether it is up, and show what the rating found |
+| `./db.sh shell` | Open a mysql prompt on `mtn_poc` |
+| `./db.sh stop` | Stop the database, keeping its data |
+| `./db.sh reset` | Throw it away and start over |
 
-  mysql --user=openrate --password=openrate PixipDB < Pixip-nnn.sql
-  
-(replace "nnn" by the highest version number you find).
+To use a MySQL you already run instead:
 
+```bash
+export OPENRATE_DB_MODE=local
+export OPENRATE_DB_USER=root OPENRATE_DB_PASS=yourpassword
+./db.sh load
+```
 
-CDR Database (local development):
-=================================
-mysqladmin --user=root --password=cpr create mtn_poc
+The connection details are in `src/main/resources/Pixip.properties.xml`, so a
+server on another host or port needs that file changed to match. The
+application connects as `openrate`/`openrate`, which `db.sh load` creates.
 
-mysql --user=root --password=cpr
+Running it yourself
+-------------------
 
-mysql> grant all privileges on mtn_poc.* to 'openrate'@'localhost';
+`demo.sh` just chains the other scripts together. To drive it by hand:
 
-mysql> grant create routine on mtn_poc.* to 'openrate'@'localhost';
+| Script | Does |
+|---|---|
+| `./build.sh` | Build the application |
+| `./run.sh` | Start the framework in the foreground; runs until stopped |
+| `./feed.sh` | Offer every record up for rating again |
+| `./feed.sh call` | Just the probe's call records (also `billing`, `sms`, `ftp`, `http`) |
+| `./stop.sh` | Shut it down cleanly |
 
-Then load the data
+OpenRate runs here as a **daemon**: it starts, polls the five input tables for
+records that have not been rated yet, rates what it finds, and keeps running
+until told to stop. So `run.sh` occupies a terminal, and you drive it from a
+second one:
 
-  mysql --user=root --password=cpr mtn_poc < mtn_poc-nnn.sql 
+```bash
+./db.sh                  # once
+./run.sh                 # terminal 1 - wait for "Running..."
+./db.sh status           # terminal 2 - what it found
+./feed.sh                # terminal 2 - rate it all again
+./stop.sh                # terminal 2
+```
 
-(replace "nnn" by the highest version number you find).
+Nothing is fed in from outside. Each input table carries the rating state of
+its own records, and `feed.sh` resets it:
 
+| State | `mtn_billing_cdr.FIELD3` | `xmass_or_cdr_*.OR_RATE_CONTROL` |
+|---|---|---|
+| Waiting to be rated | `null` | `0` |
+| Claimed by a pipeline | `'1'` | `1` |
+| Rated, not yet committed | `'2'` | `2` |
+| Done | `'3'` | `3` |
+| Rolled back | `'-1'` | `-1` |
 
-Compile OpenRate Core:
-======================
+The input adapters poll for the first of those, so clearing the flag is what
+gives the framework work to do.
 
-Download the OpenRate project from GitHub. Clean and build. Ensure that it is
-loaded into your Maven repository.
+What comes out
+--------------
 
-cd <your-choice-of-directory>
-git clone git@github.com:isparkes/OpenRate.git
-mvn install
+Each rated record goes back to the database through an upsert stored
+procedure, into a result table joined to the input on its id:
 
+| Input table | Result table |
+|---|---|
+| `mtn_billing_cdr` | `or_billing_result` |
+| `xmass_or_cdr_call` | `or_xmass_call_result` |
+| `xmass_or_cdr_sms` | `or_xmass_sms_result` |
+| `xmass_or_cdr_ftp` | `or_xmass_ftp_result` |
+| `xmass_or_cdr_http` | `or_xmass_http_result` |
 
-Compile Pixip Project:
-======================
+Each result row carries the charge (`OR_RATED_AMOUNT`) and the rating trail
+(`OR_MESSAGE`) — the tariff, zone, time band and price model used for each
+charge packet, with `#DIFF` appended if the comparison failed.
 
-Download the Pixip project from GitHub (you already have if you are reading this).
+The `Dump` module also writes a full per-record, per-module trace to
+`Data/Pixip/*.dump`. They are large — tens of megabytes a run — but they are
+the best way to see what actually happened to one record:
 
-cd <your-choice-of-directory>
-git clone git@github.com:isparkes/Pixip.git
-mvn clean install
+```bash
+grep -A40 'mtn_cdr_id = 1307' Data/Pixip/Billing_*.dump | less
+```
 
+How it works
+------------
 
-Running:
-=======
+Five pipelines, all defined in `src/main/resources/Pixip.properties.xml`.
+`PixipPipe` rates the billing records; the four `XMASS*Pipe` pipelines do the
+same for the probe records, differing only in their input table and one extra
+module. The chain is:
 
-The easiest way to run through Maven. From the command line, type
+| Module | Role |
+|---|---|
+| `PixipBillingDBInputAdapter` | Claims unrated rows and maps them into a `PixipRecord` |
+| `Normalisation` | Normalises the dialled number (regex match) |
+| `CustomerTariffLookup` | Finds the caller's tariff and balance type from their MSISDN |
+| `ChargePacketCreation` | Creates the charge packets, so the call can be split |
+| `TimeLookup` | Splits the call across time bands — peak, off peak, value |
+| `ZoneLookup` | Finds the destination zone by longest prefix match |
+| `PriceLookup` | Picks the price group for that zone, time band and service |
+| `SetupDA1XMASS` | (probe pipelines only) Sets up the dedicated account balance |
+| `PreRatingBalanceHandling` | Reduces the rateable amount for the distributor package |
+| `Rating` | Rates each charge packet with RUM based rating |
+| `RateRounding` | Rolls the impacts up and rounds |
+| `PostPaidVATDropDown` | Takes VAT out again for postpaid customers |
+| `CalculateOriginalCharge` | Reconstructs what the source system charged, main account plus any dedicated account movement |
+| `CompareCharge` | Flags the record if the two differ beyond tolerance |
+| `Dump` | Writes the per-record trace |
+| `PixipDBOutputAdapter` | Upserts the result, appending `#DIFF` if flagged |
 
-   mvn exec:java
+All the reference data is in `PixipDB`, loaded into in-memory caches at
+startup and reloadable from the admin console while the framework runs.
 
-Starting a Docker MySQL instance:
-=================================
+The admin console
+-----------------
 
-Start a local Docker MariaDB
+OpenRate exposes a control interface on port 8086:
 
-    docker run --name maria-pixip -p3307:3307 -e MYSQL_ROOT_PASSWORD=cpr -d mariadb/server:10.3
+```bash
+telnet localhost 8086
+```
 
-Copy the data into the container and login into the root session:
+`Help` lists the available commands. `stop.sh` uses this to issue:
 
-    docker cp Pixip-012.sql.gz maria-pixip:/
-    docker exec -it maria-pixip bash
+```
+Framework:shutdown=true
+```
 
-Set up the database as in the step "Configuration database" above
+> The console is unauthenticated. It is fine on a development machine; do not
+> expose the port on a shared or public network.
 
-Additionally, you have to set up the database to allow connections from outside:
+Building a distribution
+-----------------------
 
-  docker exec -it maria-pixip bash
-  mysql> create user 'openrate'@'%' identified by 'openrate';
-  mysql> grant all privileges on PixipDB.* to 'openrate'@'%';
-  mysql> grant execute on *.* to 'openrate'@'%';
-  mysql> grant create routine on PixipDB.* to 'openrate'@'%';
-  mysql> grant all privileges on mtn_poc.* to 'openrate'@'%';
-  mysql> grant create routine on mtn_poc.* to 'openrate'@'%';
+```bash
+mvn clean package
+```
 
-Next import the configuration data:
+also produces `target/ORPixip-1.0.0-bin.zip`: a self-contained distribution
+that runs anywhere with a JDK 17 and Docker, with no Maven and no source
+checkout.
 
-    gunzip Pixip-012.sql.gz
-    mysql --user=openrate --password=openrate PixipDB < Pixip-012.sql
+```
+unzip ORPixip-1.0.0-bin.zip -d pixip
+cd pixip
+bin/db.sh && bin/run.sh
+```
 
-Import the test data
+It carries its own `README.md`, the framework and dependency jars, the
+configuration, both database dumps, and `bin/db.sh`, `bin/run.sh`,
+`bin/feed.sh`, `bin/stop.sh`. Those distribution scripts launch Java directly;
+the scripts in the project root drive Maven, so each set only works in its own
+context. The distribution sources live in `src/main/bin` and `src/main/dist`.
 
-    docker cp mtn.sql.gz maria-pixip:/
-    docker exec -it maria-pixip bash
+Where to go next
+----------------
 
-Set up the database as in the step "CDR database" above
+Change a price and watch the discrepancy count move. `PRICE_MODEL` in
+`PixipDB` holds the rates:
 
-Next import the configuration data:
+```bash
+./db.sh shell
+mysql> use PixipDB;
+mysql> update PRICE_MODEL set FACTOR = FACTOR * 1.1 where PRICE_MODEL = 'PM_1_8';
+```
 
-    gunzip mtn.sql.gz
+The reference data is cached in memory, so tell the framework to reload it
+rather than restarting:
 
+```bash
+echo 'CacheFactory:Reload=true' | nc localhost 8086
+```
 
+then `./feed.sh billing` and `./db.sh status`. The rated values move, and
+records that agreed with the billing system before now show up as `#DIFF`.
 
-Running for debug:
-==================
+Other examples: [OpenRateSimple](https://github.com/isparkes/OpenRateSimple)
+(the simplest one, no database),
+[OpenRateWeblinksInterconnect](https://github.com/isparkes/OpenRateWeblinksInterconnect)
+(interconnect rating and billing),
+[ORTyfon](https://github.com/isparkes/ORTyfon) (fixed line and VoIP rating
+with fraud detection),
+[ORSeaSatCom](https://github.com/isparkes/ORSeaSatCom) (GSM and satellite
+retail rating).
 
-You should be able to run the Pixip project from any IDE. We use Netbeans. Load up the project in your IDE and you should be able to run, build and debug as with any other Maven project.
+License
+-------
 
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
 
-Running in real life:
-=====================
-
-The startup script launches the OpenRate application. There is a startup script (bin/startup.sh) and a shutdown script (bin/shutdown.sh) in the distribution directory.
-
+Copyright 2006-2026 Ian Sparkes.

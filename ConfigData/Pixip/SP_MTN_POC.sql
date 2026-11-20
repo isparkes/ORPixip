@@ -9,7 +9,7 @@ DELIMITER ;;
 /*!50003 CREATE*/ /*!50020 DEFINER=`root`@`localhost`*/ /*!50003 PROCEDURE `sp_UpsertBillingResult`(
 IN IN_MTN_CDR_ID INT,
 IN IN_UPDATE_VAL double,
-IN IN_OR_MESSAGE varchar(255)
+IN IN_OR_MESSAGE varchar(1024)
 )
 BEGIN
 DECLARE rowExist int;
@@ -28,7 +28,7 @@ END */;;
 /*!50003 CREATE*/ /*!50020 DEFINER=`root`@`localhost`*/ /*!50003 PROCEDURE `sp_UpsertXMASSCallResult`(
 IN IN_MTN_CDR_ID INT,
 IN IN_UPDATE_VAL double,
-IN IN_OR_MESSAGE varchar(255)
+IN IN_OR_MESSAGE varchar(1024)
 )
 BEGIN
 DECLARE rowExist int;
@@ -47,7 +47,7 @@ END */;;
 /*!50003 CREATE*/ /*!50020 DEFINER=`root`@`localhost`*/ /*!50003 PROCEDURE `sp_UpsertXMASSFtpResult`(
 IN IN_MTN_CDR_ID INT,
 IN IN_UPDATE_VAL double,
-IN IN_OR_MESSAGE varchar(255)
+IN IN_OR_MESSAGE varchar(1024)
 )
 BEGIN
 DECLARE rowExist int;
@@ -66,7 +66,7 @@ END */;;
 /*!50003 CREATE*/ /*!50020 DEFINER=`root`@`localhost`*/ /*!50003 PROCEDURE `sp_UpsertXMASSHttpResult`(
 IN IN_MTN_CDR_ID INT,
 IN IN_UPDATE_VAL double,
-IN IN_OR_MESSAGE varchar(255)
+IN IN_OR_MESSAGE varchar(1024)
 )
 BEGIN
 DECLARE rowExist int;
@@ -85,7 +85,7 @@ END */;;
 /*!50003 CREATE*/ /*!50020 DEFINER=`root`@`localhost`*/ /*!50003 PROCEDURE `sp_UpsertXMASSSmsResult`(
 IN IN_MTN_CDR_ID INT,
 IN IN_UPDATE_VAL double,
-IN IN_OR_MESSAGE varchar(255)
+IN IN_OR_MESSAGE varchar(1024)
 )
 BEGIN
 DECLARE rowExist int;
